@@ -70,7 +70,7 @@ def test_complete_mathquiz_game(monkeypatch, cleanup_logging):
             cli_run()
 
 
-def test_pool_mode(monkeypatch):
+def test_pool_mode(monkeypatch, cleanup_logging):
     """Test the pool mode."""
     with tempfile.TemporaryDirectory(prefix="test_main") as temp_dir:
         test_args = [
@@ -92,7 +92,7 @@ def test_pool_mode(monkeypatch):
             cli_run()
 
 
-def test_pool_with_calculate_ratings(monkeypatch):
+def test_pool_with_calculate_ratings(monkeypatch, cleanup_logging):
     """Test the calculate_ratings function."""
     with tempfile.TemporaryDirectory(prefix="test_main") as temp_dir:
         test_args = [
@@ -129,7 +129,7 @@ def test_pool_with_calculate_ratings(monkeypatch):
                 mock_calculate_ratings.assert_called_once()
 
 
-def test_calculate_ratings_with_no_pool(monkeypatch):
+def test_calculate_ratings_with_no_pool(monkeypatch, cleanup_logging):
     """Test the calculate_ratings function with no pool."""
     with tempfile.TemporaryDirectory(prefix="test_main") as temp_dir:
         test_args = [
