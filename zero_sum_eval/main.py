@@ -126,7 +126,7 @@ def run_single_game(config):
 
 def run_pool_matches(config):
     # Set up logging with 'match_series' prefix
-    handlers = setup_logging(config["game"]["name"], 'match_series')
+    handlers = setup_logging(config["game"]["name"], os.path.join(config["manager"]["output_dir"], 'match_series'))
 
     match_manager = GamePoolManager(
         **config["manager"],
