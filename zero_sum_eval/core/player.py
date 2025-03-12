@@ -7,7 +7,7 @@ import dspy
 import time
 from dspy.primitives import assert_transform_module, backtrack_handler
 from zero_sum_eval.utils.checkpointing import save_checkpoint, load_checkpoint, get_cached_module_path
-from zero_sum_eval.utils.types import Action, ActionConfig, Move
+from zero_sum_eval.utils.types import Action, ActionConfig, Move, MoveParseError
 
 # Disable debugging logs of litellm
 import litellm
@@ -134,10 +134,14 @@ class Player(ABC):
     def act(self, action: Action) -> Move:
         if isinstance(self.action_fn_dict[action.name], dspy.Module):
             start_time = time.time()
-            with dspy.context(lm=self.llm_model):
-                trace = self.action_fn_dict[action.name](**action.inputs)
-            output = trace.items()[-1][1]
-            return Move(value=output, time=time.time() - start_time, trace=trace)
+            try:
+                with dspy.context(lm=self.llm_model):
+                    trace = self.action_fn_dict[action.name](**action.inputs)
+                output = trace.items()[-1][1]
+                return Move(value=output, time=time.time() - start_time, trace=trace)
+            except ValueError as e:
+                # TODO: remove this once dspy figures out better parsing
+                raise MoveParseError(f"Error producing move for action {action.name}: {e}") from e
         else:
             start_time = time.time()
             output = self.action_fn_dict[action.name](**action.inputs)

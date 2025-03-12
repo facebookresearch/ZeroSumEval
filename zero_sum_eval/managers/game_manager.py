@@ -8,7 +8,8 @@ from typing import Dict, List
 
 import jsonlines
 
-from zero_sum_eval.core.game_state import GameState, InvalidMoveError
+from zero_sum_eval.core.game_state import GameState
+from zero_sum_eval.utils.types import InvalidMoveError, MoveParseError
 from zero_sum_eval.core.player import Player
 
 class GameManager:
@@ -55,26 +56,27 @@ class GameManager:
             logger.info(f"\t\t--- {player.id} (attempt # {self.player_attempts[player]}) ---")
             logger.info(f"Game State:\n{game_state.display()}\n")
 
-            move = player.act(action)
-            
-            # Update the player's time usage
-            self.player_time_used[player] += move.time
-            
-            # Check if player has exceeded their time limit
-            if self.max_time_per_player is not None and self.player_time_used[player] > self.max_time_per_player:
-                logger.info(f"Player {player.id} has exceeded the maximum time limit of {self.max_time_per_player} seconds. Ending game.")
-                game_state.set_timeout_loss(player.id)
-                break
-                
-            logger.info(f"Move took {move.time:.2f} seconds. Total time used by {player.id}: {self.player_time_used[player]:.2f} seconds")
-            
             try:
+                move = player.act(action)
+                # Update the player's time usage
+                self.player_time_used[player] += move.time
+                
+                # Check if player has exceeded their time limit
+                if self.max_time_per_player is not None and self.player_time_used[player] > self.max_time_per_player:
+                    logger.info(f"Player {player.id} has exceeded the maximum time limit of {self.max_time_per_player} seconds. Ending game.")
+                    game_state.set_timeout_loss(player.id)
+                    break
+                    
+                logger.info(f"Move took {move.time:.2f} seconds. Total time used by {player.id}: {self.player_time_used[player]:.2f} seconds")
                 game_state.update_game(move)
                 retrying = False
                 logger.info(f"\nPlayer {player.id} made move:\n{move.value}\n\n")
-            except InvalidMoveError as e:
+            except (InvalidMoveError, MoveParseError) as e:
                 # If the move was invalid, log the error and increment the player's attempts
-                logger.error(f"Invalid move: {e}")
+                if isinstance(e, InvalidMoveError):
+                    logger.error(f"Invalid move: {e}")
+                else:
+                    logger.error(f"Move parse error: {e}")
                 self.player_attempts[player] += 1
                 retrying = True
                 if self.player_attempts[player] >= self.max_player_attempts:

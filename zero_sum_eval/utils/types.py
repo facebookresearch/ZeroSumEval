@@ -43,3 +43,9 @@ class Dataset(ABC):
     @abstractmethod
     def get_dataset(self) -> Iterable[Example]:
         pass
+
+class InvalidMoveError(Exception):
+    pass
+
+class MoveParseError(Exception):
+    pass
