@@ -137,7 +137,7 @@ def calculate_ratings(logs_path: str, bootstrap_rounds: int, max_time_per_player
         config = yaml.safe_load(f)
         max_player_attempts = config['manager']['max_player_attempts']
 
-    match_df = convert_matches_to_df((logs_path=logs_path, max_player_attempts=max_player_attempts, max_time_per_player=max_time_per_player)
+    match_df = convert_matches_to_df(logs_path=logs_path, max_player_attempts=max_player_attempts, max_time_per_player=max_time_per_player)
 
     np.random.seed(1)
     bootstrap_elo_lu = get_bootstrap_result(match_df, compute_mle_elo, bootstrap_rounds)
