@@ -4,7 +4,7 @@ import yaml
 import os
 import argparse
 from glob import glob
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -99,7 +99,7 @@ def get_bootstrap_result(battles, func_compute_elo, num_round):
     return df[df.median().sort_values(ascending=False).index]
 
 
-def convert_matches_to_df(logs_path: str, max_player_attempts: int) -> pd.DataFrame:
+def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per_player: Optional[float] = None) -> pd.DataFrame:
     matches = []
     for match_results_path in glob(f'{logs_path}/**/matches/*/scores.json', recursive=True):
         with open(match_results_path) as f:
@@ -109,8 +109,9 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int) -> pd.DataFr
         models = list(scores.keys())[:2]
 
         for model in models:
-            if scores[model]['attempts'] >= max_player_attempts:
+            if scores[model]['attempts'] >= max_player_attempts or (max_time_per_player is not None and scores[model]['total_time'] >= max_time_per_player):
                 scores[model]['score'] = -math.inf
+
 
         def winner(scores: dict, models: List[str]) -> str:
             advantage_a = scores[models[0]]['score'] - scores[models[1]]['score']
@@ -130,13 +131,14 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int) -> pd.DataFr
     return matches_df
 
 
-def calculate_ratings(logs_path: str, bootstrap_rounds: int) -> pd.DataFrame:
+def calculate_ratings(logs_path: str, bootstrap_rounds: int, max_time_per_player: Optional[float] = None) -> pd.DataFrame:
 
     with open(os.path.join(logs_path, 'pool_config.yaml')) as f:
         config = yaml.safe_load(f)
         max_player_attempts = config['manager']['max_player_attempts']
 
-    match_df = convert_matches_to_df(logs_path, max_player_attempts)
+    match_df = convert_matches_to_df((logs_path=logs_path, max_player_attempts=max_player_attempts, max_time_per_player=max_time_per_player)
+
     np.random.seed(1)
     bootstrap_elo_lu = get_bootstrap_result(match_df, compute_mle_elo, bootstrap_rounds)
 
@@ -152,9 +154,13 @@ def calculate_ratings(logs_path: str, bootstrap_rounds: int) -> pd.DataFrame:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+
     parser.add_argument("--logs-path", "-p", help="Path to the match logs file", required=True)
     parser.add_argument("--bootstrap-rounds", "-b", help="Number of rounds to bootstrap for confidence intervals.", type=int, default=10_000)
+    parser.add_argument("--max-time-per-player", "-t", help="Maximum number of player time.", type=float, default=None)
+    
     args = parser.parse_args()
 
-    ratings = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds)
+    ratings = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player)
+    
     print(ratings)

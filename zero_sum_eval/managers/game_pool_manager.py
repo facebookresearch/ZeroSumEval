@@ -6,7 +6,7 @@ from logging import getLogger
 from math import inf
 import os
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from zero_sum_eval.managers.game_manager import GameManager
 from zero_sum_eval.managers.matchers import RoundRobin
@@ -20,6 +20,7 @@ class GamePoolManager:
         max_concurrent_matches: int = 1,
         max_rounds_per_match: int = 100,
         max_player_attempts: int = 5,
+        max_time_per_player: Optional[float] = None,
         output_dir: str = "pool_output",
         game: str = "chess",
         game_args: Dict = {},
@@ -44,7 +45,7 @@ class GamePoolManager:
         self.max_concurrent_matches = max_concurrent_matches
         self.max_rounds_per_match = max_rounds_per_match
         self.max_player_attempts = max_player_attempts
-
+        self.max_time_per_player = max_time_per_player
         self.output_dir = output_dir
 
         # Ensure unique names for LMs
@@ -119,7 +120,7 @@ class GamePoolManager:
         turn_dir += f"_{int(time.time())}"
         os.makedirs(turn_dir, exist_ok=True)
         game_state = self._build_game(lms=lms)
-        game_manager = GameManager(max_rounds=self.max_rounds_per_match, max_player_attempts=self.max_player_attempts, output_dir=turn_dir)
+        game_manager = GameManager(max_rounds=self.max_rounds_per_match, max_player_attempts=self.max_player_attempts, output_dir=turn_dir, max_time_per_player=self.max_time_per_player)
 
         matchup_string = ""
         for player in game_state.players.values():
@@ -131,6 +132,7 @@ class GamePoolManager:
         results = game_manager.start(game_state)
         final_game_state = results["game_state"]
         player_attempts = results["player_attempts"]
+        player_time_used = results["player_time_used"]
 
         winner_role = max(final_game_state.get_scores().items(), key=lambda x: x[1])[0]
 
@@ -145,7 +147,8 @@ class GamePoolManager:
             scores[lm] = {
                 "score": final_game_state.get_scores()[role],
                 "role": role,
-                "attempts": player_attempts[player]
+                "attempts": player_attempts[player],
+                "total_time": player_time_used[player],
             }
 
         with open(os.path.join(turn_dir, "scores.json"), mode='w', newline='') as f:

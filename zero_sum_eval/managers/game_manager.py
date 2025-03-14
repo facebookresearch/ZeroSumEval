@@ -4,7 +4,7 @@ import os
 import dspy
 from collections import defaultdict
 from logging import getLogger
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import jsonlines
 
@@ -13,7 +13,7 @@ from zero_sum_eval.utils.types import InvalidMoveError, MoveParseError
 from zero_sum_eval.core.player import Player
 
 class GameManager:
-    def __init__(self, max_rounds: int, max_player_attempts: int, output_dir: str, max_time_per_player: float = None):
+    def __init__(self, max_rounds: int, max_player_attempts: int, output_dir: str, max_time_per_player: Optional[float] = None):
         """
         Initialize the GameManager with the given configuration.
 
@@ -26,7 +26,7 @@ class GameManager:
         """
         self.max_rounds: int = max_rounds
         self.max_player_attempts: int = max_player_attempts
-        self.max_time_per_player: float = max_time_per_player
+        self.max_time_per_player: Optional[float] = max_time_per_player
         self.turns_log_file = os.path.join(output_dir, "turns.jsonl")
         self.player_attempts = defaultdict(int)
         self.player_time_used = defaultdict(float)
@@ -64,7 +64,6 @@ class GameManager:
                 # Check if player has exceeded their time limit
                 if self.max_time_per_player is not None and self.player_time_used[player] > self.max_time_per_player:
                     logger.info(f"Player {player.id} has exceeded the maximum time limit of {self.max_time_per_player} seconds. Ending game.")
-                    game_state.set_timeout_loss(player.id)
                     break
                     
                 logger.info(f"Move took {move.time:.2f} seconds. Total time used by {player.id}: {self.player_time_used[player]:.2f} seconds")
