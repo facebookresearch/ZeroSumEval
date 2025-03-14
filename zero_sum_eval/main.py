@@ -51,7 +51,8 @@ This script supports three modes of operation:
     parser.add_argument("--game_kwargs", type=str, nargs="+", default="", help="Arguments to pass to the game constructor as a string. For example, 'rebuttal_rounds=2', 'topics=topics.txt' for the debate game.")
     parser.add_argument("--max_rounds", type=int, default=100, help="Maximum number of rounds to play.")
     parser.add_argument("--max_player_attempts", type=int, default=5, help="Maximum number of attempts to generate a valid player move.")
-    
+    parser.add_argument("--max_time_per_player", type=float, default=None, help="Maximum number of seconds to generate a valid player move. (default: None, no time limit)")
+
     # Pool mode arguments
     parser.add_argument("--pool", action="store_true", help="Run a pool of matches instead of a single game.")
     parser.add_argument("-m", "--models", type=str, nargs="+", help="List of models to evaluate. (Only for pool mode)")
@@ -76,6 +77,7 @@ def config_from_args(args):
                 "max_matches": args.max_matches,
                 "max_rounds_per_match": args.max_rounds,
                 "max_player_attempts": args.max_player_attempts,
+                "max_time_per_player": args.max_time_per_player,
                 "output_dir": args.output_dir,
             },
             "llms": [
@@ -90,6 +92,7 @@ def config_from_args(args):
                 "max_player_attempts": args.max_player_attempts,
                 "max_rounds": args.max_rounds,
                 "output_dir": args.output_dir,
+                "max_time_per_player": args.max_time_per_player,
             },
         }
         role_model_pairs = [model.split("=") for model in args.players]
@@ -113,7 +116,8 @@ def run_single_game(config):
         game_manager = GameManager(
             max_rounds=config["manager"]["max_rounds"], 
             max_player_attempts=config["manager"]["max_player_attempts"], 
-            output_dir=config["manager"]["output_dir"]
+            output_dir=config["manager"]["output_dir"],
+            max_time_per_player=config["manager"]["max_time_per_player"]
         )
         logger.info("Starting a new game")
         final_state = game_manager.start(game)
@@ -195,9 +199,10 @@ def cli_run():
     # Calculate ELO ratings if requested
     if args.calculate_ratings:
         ratings = calculate_ratings(
-            logs_path=args.output_dir,
+            logs_path=config["manager"]["output_dir"],
             bootstrap_rounds=args.bootstrap_rounds,
-            max_player_attempts=args.max_player_attempts
+            max_player_attempts=config["manager"]["max_player_attempts"],
+            max_time_per_player=config["manager"]["max_time_per_player"]
         )
         print(ratings)
     # Run single game if no other modes specified
