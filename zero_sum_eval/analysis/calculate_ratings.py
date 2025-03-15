@@ -5,12 +5,32 @@ import os
 import argparse
 from glob import glob
 from typing import List, Optional
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
 from sklearn.linear_model import LogisticRegression
+
+
+def summarize_results(matches_df: pd.DataFrame) -> None:
+
+    results = defaultdict(lambda: [0, 0, 0])
+    for row in matches_df.itertuples():
+        if row.winner == 'model_a':
+            results[row.model_a][0] += 1
+            results[row.model_b][2] += 1
+        elif row.winner == 'model_b':
+            results[row.model_a][2] += 1
+            results[row.model_b][0] += 1
+        else:
+            results[row.model_a][2] += 1
+            results[row.model_b][0] += 1
+    strength = lambda res: (res[1][0] - res[1][2]) / len(res[1])
+    for model, result in sorted(results.items(), key=strength, reverse=True):
+        print(f"{model}: {result[0]}W / {result[1]}D / {result[2]}L")
+
 
 # Function from https://lmsys.org/blog/2023-12-07-leaderboard/
 def compute_mle_elo(
@@ -19,34 +39,16 @@ def compute_mle_elo(
     
     models = set(df['model_a']) | set(df['model_b'])
     models = list(sorted(models))
-    
-    ptbl_a_win = pd.pivot_table(
-        df[df["winner"] == "model_a"],
-        index="model_a",
-        columns="model_b",
-        aggfunc="size",
-        fill_value=0,
-    )
 
-    # TODO: patch to fix sets with ties when not all models have ties
-    # but currently not optimal due to the iterrows().
-    ptbl_tie = pd.DataFrame(0, index=models, columns=models)
-    for _, row in df[df["winner"].isin(["tie", "tie (bothbad)"])].iterrows():
-        ptbl_tie.loc[row['model_a'],row['model_b']] += 1
-        ptbl_tie.loc[row['model_b'],row['model_a']] += 1
-
-    ptbl_b_win = pd.pivot_table(
-        df[df["winner"] == "model_b"],
-        index="model_a",
-        columns="model_b",
-        aggfunc="size",
-        fill_value=0,
-    )
-    ptbl_win = ptbl_a_win * 2 + ptbl_b_win.T * 2 + ptbl_tie
-
-    # adjust for possible missing models after sampling
-    ptbl_win = ptbl_win.reindex(models, fill_value=0)
-    ptbl_win = ptbl_win.fillna(0)
+    ptbl_win = pd.DataFrame(0, index=models, columns=models)
+    for row in df.itertuples():
+        if row.winner == 'model_a':
+            ptbl_win.loc[row.model_a, row.model_b] += 2
+        elif row.winner == 'model_b':
+            ptbl_win.loc[row.model_b, row.model_a] += 2
+        else:
+            ptbl_win.loc[row.model_a, row.model_b] += 1
+            ptbl_win.loc[row.model_b, row.model_a] += 1
 
     models = pd.Series(np.arange(len(ptbl_win.index)), index=ptbl_win.index)
 
@@ -68,7 +70,7 @@ def compute_mle_elo(
             Y[cur_row] = 1.0
             sample_weights.append(ptbl_win.loc[m_a, m_b])
 
-            X[cur_row + 1, models[m_a]] = math.log(BASE)
+            X[cur_row + 1, models[m_a]] = +math.log(BASE)
             X[cur_row + 1, models[m_b]] = -math.log(BASE)
             Y[cur_row + 1] = 0.0
             sample_weights.append(ptbl_win.loc[m_b, m_a])
@@ -100,6 +102,10 @@ def get_bootstrap_result(battles, func_compute_elo, num_round):
 
 
 def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per_player: Optional[float] = None) -> pd.DataFrame:
+
+    model_roles = defaultdict(lambda: defaultdict(int))
+    model_results = defaultdict(lambda: [0]*3)
+
     matches = []
     for match_results_path in glob(f'{logs_path}/**/matches/*/scores.json', recursive=True):
         with open(match_results_path) as f:
@@ -111,8 +117,8 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per
         for model in models:
             if scores[model]['attempts'] >= max_player_attempts or (max_time_per_player is not None and scores[model]['total_time'] >= max_time_per_player):
                 scores[model]['score'] = -math.inf
-
-
+            model_roles[model][scores[model]['role']] += 1
+            
         def winner(scores: dict, models: List[str]) -> str:
             advantage_a = scores[models[0]]['score'] - scores[models[1]]['score']
             if advantage_a > 0:
@@ -128,6 +134,17 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per
         ])
 
     matches_df = pd.DataFrame(matches, columns=['model_a', 'model_b', 'winner'])
+
+    print('Role Summary:')
+    for model, roles in sorted(model_roles.items()):
+        print(model)
+        print(', '.join(f'{k}: {v}' for k, v in sorted(roles.items())))
+    print('\n')
+
+    print('Result Summary:')
+    summarize_results(matches_df)
+    print('\n')
+
     return matches_df
 
 
