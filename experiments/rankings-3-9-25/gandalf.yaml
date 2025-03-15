@@ -1,12 +1,15 @@
+# to run the pool
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/gandalf.yaml --pool --calculate_ratings | tee gandalf_pool.log
 config_type: pool
 manager:
-  max_matches: 100
-  max_rounds_per_match: 100
+  max_matches: 1000
+  max_rounds_per_match: 10
   max_player_attempts: 3
-  output_dir: rankings-3-9-25_gandalf
+  output_dir: rankings-3-9-25_gandalf_reasoning_1000
 game:
   name: gandalf
   args:
+    max_turns: 10
     players:
       sentinel:
         args:
