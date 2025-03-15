@@ -202,7 +202,7 @@ def cli_run():
             logs_path=config["manager"]["output_dir"],
             bootstrap_rounds=args.bootstrap_rounds,
             max_player_attempts=config["manager"]["max_player_attempts"],
-            max_time_per_player=config["manager"]["max_time_per_player"]
+            max_time_per_player=config["manager"].get("max_time_per_player", None)
         )
         print(ratings)
     # Run single game if no other modes specified
