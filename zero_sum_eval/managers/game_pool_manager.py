@@ -12,6 +12,10 @@ from zero_sum_eval.managers.game_manager import GameManager
 from zero_sum_eval.managers.matchers import RoundRobin
 from zero_sum_eval.core.registry import GAME_REGISTRY
 
+WDL_FILE = "wdl.json"
+SCORES_FILE = "scores.json"
+MATCH_DIR = "matches/"
+
 class GamePoolManager:
 
     def __init__(
@@ -40,14 +44,14 @@ class GamePoolManager:
         ],
     ):
         self.logger = getLogger()
-
         self.max_matches = max_matches
         self.max_concurrent_matches = max_concurrent_matches
         self.max_rounds_per_match = max_rounds_per_match
         self.max_player_attempts = max_player_attempts
         self.max_time_per_player = max_time_per_player
         self.output_dir = output_dir
-
+        self.prev_matches_played = 0
+        
         # Ensure unique names for LMs
         seen = defaultdict(int)
         for llm in llm_configs:
@@ -57,6 +61,7 @@ class GamePoolManager:
             else:
                 seen[llm["name"]] = 1
         self.llm_configs = {llm["name"]: llm for llm in llm_configs}
+        self.llm_wdl = {llm_name: {"wins": 0, "draws": 0, "losses": 0} for llm_name in self.llm_configs}
 
         self.game = game
         self.game_args = game_args
@@ -67,20 +72,21 @@ class GamePoolManager:
             players_per_match=len(self._get_player_configs()),
         )
         self.logger.info(f"Scheduled matches: {self.matcher.matches}")
-        self.llm_wdl = {llm_name: {"wins": 0, "draws": 0, "losses": 0} for llm_name in self.llm_configs}
 
         self.match_freq = dict()
         for matchup in self.matcher.matches:
             self.match_freq[matchup] = 0
-        for match in glob(f"{self.output_dir}/matches/*"):
-            # don't consider empty dirs
-            if not os.path.exists(os.path.join(match, "results.json")):
-                continue
-            model_names = match.split("/")[-1].split("_vs_")
-            model_names[-1] = model_names[-1].split("_")[0]
-            model_names = tuple(model_names)
-            if model_names in self.match_freq:
-                self.match_freq[model_names] += 1
+        for match in glob(f"{self.output_dir}/{MATCH_DIR}/*"):
+            if os.path.exists(os.path.join(match, SCORES_FILE)):
+                with open(os.path.join(match, SCORES_FILE), mode='r', newline='') as f:
+                    scores = json.load(f)
+                self.calculate_wdl(scores)
+                model_names = match.split("/")[-1].split("_vs_")
+                model_names[-1] = model_names[-1].split("_")[0]
+                model_names = tuple(model_names)
+                if model_names in self.match_freq:
+                    self.match_freq[model_names] += 1
+                    self.prev_matches_played += 1
 
     def _get_player_configs(self):
         player_definitions = GAME_REGISTRY[self.game.lower()].player_definitions()
@@ -112,7 +118,7 @@ class GamePoolManager:
         return min(self.match_freq.keys(), key=lambda k: self.match_freq[k])
 
     def run_match(self, lms):
-        turn_dir = os.path.join(self.output_dir, "matches/")
+        turn_dir = os.path.join(self.output_dir, MATCH_DIR)
         for lm in lms:
             turn_dir += f"{lm}_vs_"
 
@@ -151,17 +157,35 @@ class GamePoolManager:
                 "total_time": player_time_used[player],
             }
 
-        with open(os.path.join(turn_dir, "scores.json"), mode='w', newline='') as f:
+        with open(os.path.join(turn_dir, SCORES_FILE), mode='w', newline='') as f:
             json.dump(scores, f)
 
         return scores
 
+    def calculate_wdl(self, scores):
+        scores = {lm: result["score"] if result["attempts"] < self.max_player_attempts else -inf for lm, result in scores.items()}
+        best_score = max(scores.items(), key=lambda x: x[1])[1]
+        best_lms = [lm for lm, score in scores.items() if score == best_score]
+
+        for lm, score in scores.items():
+            if lm in self.llm_wdl:
+                if score == best_score:
+                    if len(best_lms) > 1:
+                        self.llm_wdl[lm]["draws"] += 1
+                    else:
+                        self.llm_wdl[lm]["wins"] += 1
+                else:
+                    self.llm_wdl[lm]["losses"] += 1
+
     def start(self):
         self.logger.info("Let the games begin!")
+        if self.prev_matches_played >= self.max_matches:
+            self.logger.info(f"No more matches to play, to continue this pool, set max_matches > {self.prev_matches_played=}")
+            return self.llm_wdl
 
         with ThreadPoolExecutor(max_workers=self.max_concurrent_matches) as executor:
             future_to_match = {}
-            for _ in range(self.max_matches):
+            for _ in range(self.max_matches - self.prev_matches_played):
                 lms = self.get_next_min_match()
                 future = executor.submit(self.run_match, lms)
                 self.match_freq[tuple(lms)] += 1
@@ -169,26 +193,15 @@ class GamePoolManager:
 
             for future in as_completed(future_to_match):
                 try:
-                    results = future.result()
+                    scores = future.result()
                 except Exception as e:
                     for f in future_to_match:
                         f.cancel()
                     raise e
                 
-                # If a player has reached the max number of attempts, they are assigned a score of -inf (always lose)
-                scores = {lm: result["score"] if result["attempts"] < self.max_player_attempts else -inf for lm, result in results.items()}
-                best_score = max(scores.items(), key=lambda x: x[1])[1]
-                best_lms = [lm for lm, score in scores.items() if score == best_score]
-
-                for lm, score in scores.items():
-                    if score == best_score:
-                        if len(best_lms) > 1:
-                            self.llm_wdl[lm]["draws"] += 1
-                        else:
-                            self.llm_wdl[lm]["wins"] += 1
-                    else:
-                        self.llm_wdl[lm]["losses"] += 1
-        with open(os.path.join(self.output_dir, "wdl.json"), mode='w', newline='') as f:
+                self.calculate_wdl(scores)
+                
+        with open(os.path.join(self.output_dir, WDL_FILE), mode='w', newline='') as f:
             json.dump(self.llm_wdl, f)
 
         return self.llm_wdl
