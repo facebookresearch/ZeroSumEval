@@ -68,11 +68,6 @@ llms:
     args:
       cache: false
 
-  - name: gemini-2.0-flash-thinking
-    model: openrouter/google/gemini-2.0-flash-thinking-exp:free
-    args:
-      cache: false
-
   - name: qwq-32b
     model: openrouter/qwen/qwq-32b
     args:
