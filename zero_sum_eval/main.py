@@ -171,7 +171,6 @@ def cli_run():
         ratings = calculate_ratings(
             logs_path=args.output_dir,
             bootstrap_rounds=args.bootstrap_rounds,
-            max_player_attempts=args.max_player_attempts
         )
         print(ratings)
         return
