@@ -53,22 +53,22 @@ class ClosingStatementSignature(dspy.Signature):
 
 
 class OpeningStatement(dspy.Module):
-    def __init__(self):
-        self.make_opening_statement = dspy.ChainOfThought(OpeningStatementSignature)
+    def __init__(self, module):
+        self.make_opening_statement = module(OpeningStatementSignature)
 
     def forward(self, topic, side):
         return self.make_opening_statement(topic=topic, side=side)
 
 class Rebuttal(dspy.Module):
-    def __init__(self):
-        self.make_rebuttal = dspy.ChainOfThought(RebuttalSignature)
+    def __init__(self, module):
+        self.make_rebuttal = module(RebuttalSignature)
 
     def forward(self, topic, history, side):
         return self.make_rebuttal(topic=topic, side=side, history=history)
 
 class ClosingStatement(dspy.Module):
-    def __init__(self):
-        self.make_closing_statement = dspy.ChainOfThought(ClosingStatementSignature)
+    def __init__(self, module):
+        self.make_closing_statement = module(ClosingStatementSignature)
 
     def forward(self, topic, history, side):
         return self.make_closing_statement(topic=topic, side=side, history=history)
@@ -76,9 +76,17 @@ class ClosingStatement(dspy.Module):
 
 @PLAYER_REGISTRY.register("debate", "debate_player")
 class DebatePlayer(Player):
-    def init_actions(self):
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
+
         return {
-            "OpeningStatement": OpeningStatement(),
-            "Rebuttal": Rebuttal(),
-            "ClosingStatement": ClosingStatement()
+            "OpeningStatement": OpeningStatement(module=supported_modules[module]),
+            "Rebuttal": Rebuttal(module=supported_modules[module]),
+            "ClosingStatement": ClosingStatement(module=supported_modules[module])
         }

@@ -1,4 +1,3 @@
-from typing import Dict
 import dspy
 from zero_sum_eval.core.player import Player
 from zero_sum_eval.core.registry import PLAYER_REGISTRY
@@ -17,9 +16,9 @@ class MakeMoveSignature(dspy.Signature):
     amount: int = dspy.OutputField(desc='The amount to raise, if the action is "Raise"')
 
 class PokerMoveModule(dspy.Module):
-    def __init__(self):
+    def __init__(self, module):
         super().__init__()
-        self.make_move = dspy.ChainOfThought(MakeMoveSignature)
+        self.make_move = module(MakeMoveSignature)
 
     def forward(
         self,
@@ -66,8 +65,13 @@ class PokerMoveModule(dspy.Module):
 
 @PLAYER_REGISTRY.register("poker", "poker_player")
 class PokerPlayer(Player):    
-    def init_actions(self) -> Dict[str, dspy.Module]:
-        """Initialize the action modules for the player"""
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
         return {
-            "MakeMove": PokerMoveModule()
+            "MakeMove": PokerMoveModule(module=supported_modules[module])
         }

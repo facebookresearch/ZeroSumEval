@@ -48,9 +48,9 @@ def validate_bid(example, prediction, trace=None):
         return 0
 
 class MakeBidModule(dspy.Module):
-    def __init__(self):
+    def __init__(self, module):
         super().__init__()
-        self.make_bid = dspy.ChainOfThought(MakeBidSignature)
+        self.make_bid = module(MakeBidSignature)
 
     def forward(self, dice_roll, current_bid, history):
         return self.make_bid(
@@ -61,7 +61,13 @@ class MakeBidModule(dspy.Module):
 
 @PLAYER_REGISTRY.register("liars_dice", "liars_dice_player")
 class LiarsDicePlayer(Player):
-    def init_actions(self):
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
         return {
-            "MakeBid": MakeBidModule()
+            "MakeBid": MakeBidModule(module=supported_modules[module])
         }

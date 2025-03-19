@@ -26,19 +26,19 @@ class AnswerQuestion(dspy.Signature):
     question: str = dspy.InputField(desc="math question")
     answer: int = dspy.OutputField(desc="answer to the math question (integer)")
 
-class GenerateQuestionCoT(dspy.Module):
-    def __init__(self):
+class GenerateQuestionModule(dspy.Module):
+    def __init__(self, module):
         super().__init__()
-        self.cot_question = dspy.ChainOfThought(GenerateQuestion)
+        self.cot_question = module(GenerateQuestion)
 
     def forward(self, target):
         cot_out = self.cot_question(target=target)
         return cot_out
 
-class AnswerQuestionCoT(dspy.Module):
-    def __init__(self):
+class AnswerQuestionModule(dspy.Module):
+    def __init__(self, module):
         super().__init__()
-        self.cot_answer = dspy.ChainOfThought(AnswerQuestion)
+        self.cot_answer = module(AnswerQuestion)
 
     def forward(self, question):
         cot_out = self.cot_answer(question=question)
@@ -47,14 +47,24 @@ class AnswerQuestionCoT(dspy.Module):
 
 @PLAYER_REGISTRY.register("mathquiz", "mathquiz_teacher")
 class MathQuizTeacher(Player):    
-    def init_actions(self):
-        return {
-            "GenerateQuestion": GenerateQuestionCoT(),
-            "AnswerQuestion": AnswerQuestionCoT()
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
         }
-
-
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
+        return {
+            "GenerateQuestion": GenerateQuestionModule(module=supported_modules[module]),
+            "AnswerQuestion": AnswerQuestionModule(module=supported_modules[module])
+        }
 @PLAYER_REGISTRY.register("mathquiz", "mathquiz_student")
 class MathQuizStudent(Player):
-    def init_actions(self):
-        return {"AnswerQuestion": AnswerQuestionCoT()}
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
+        return {"AnswerQuestion": AnswerQuestionModule(module=supported_modules[module])}

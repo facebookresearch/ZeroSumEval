@@ -16,10 +16,10 @@ class SolveCode(dspy.Signature):
     history = dspy.InputField(desc="History of previous attempts and outputs")
     code = dspy.OutputField(desc="Solution code to access FLAG start with ###START, end with ###END")
 
-class GeneratePyjailCoT(dspy.Module):
-    def __init__(self):
+class GeneratePyjailModule(dspy.Module):
+    def __init__(self, module):
         super().__init__()
-        self.cot_generate = dspy.ChainOfThought(GenerateCode)
+        self.cot_generate = module(GenerateCode)
 
     def forward(self):
         cot_out = self.cot_generate()
@@ -34,10 +34,10 @@ class GeneratePyjailCoT(dspy.Module):
 
         return cot_out
         
-class SolvePyjailCoT(dspy.Module):
-    def __init__(self):
+class SolvePyjailModule(dspy.Module):
+    def __init__(self, module):
         super().__init__()
-        self.cot_solve = dspy.ChainOfThought(SolveCode)
+        self.cot_solve = module(SolveCode)
 
     def forward(self, pyjail_code, history):
         cot_out = self.cot_solve(pyjail_code=pyjail_code, history=history)
@@ -52,8 +52,14 @@ class SolvePyjailCoT(dspy.Module):
 
 @PLAYER_REGISTRY.register("pyjail", "pyjail_player")
 class PyJailPlayer(Player):
-    def init_actions(self):
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
         return {
-            "GeneratePyJail": GeneratePyjailCoT(),
-            "SolvePyJail": SolvePyjailCoT()
+            "GeneratePyJail": GeneratePyjailModule(module=supported_modules[module]),
+            "SolvePyJail": SolvePyjailModule(module=supported_modules[module])
         }

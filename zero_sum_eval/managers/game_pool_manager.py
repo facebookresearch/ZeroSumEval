@@ -60,7 +60,8 @@ class GamePoolManager:
                 llm["name"] += f"_{seen[llm['name']]}"
             else:
                 seen[llm["name"]] = 1
-        self.llm_configs = {llm["name"]: llm for llm in llm_configs}
+        self.llm_configs = {llm["name"]: {k: v for k, v in llm.items() if k != "action_args"} for llm in llm_configs}
+        self.action_args = {llm["name"]: llm.get("action_args", {}) for llm in llm_configs}
         self.llm_wdl = {llm_name: {"wins": 0, "draws": 0, "losses": 0} for llm_name in self.llm_configs}
 
         self.game = game
@@ -106,6 +107,7 @@ class GamePoolManager:
                 player_config["args"] = {}
             player_config["args"]["lm"] = self.llm_configs[lm]
             player_config["args"]["id"] = f"{lm}||{role}"
+            player_config["args"]["action_args"] = self.action_args[lm]
         config = {
             **self.game_args,
             "players": player_configs,

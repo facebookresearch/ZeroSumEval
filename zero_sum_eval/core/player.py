@@ -30,6 +30,7 @@ class Player(ABC):
         max_tries: int = 10,
         use_cache: bool = True,
         cache_dir: Optional[str] = None,
+        action_args: Optional[dict] = None
     ):
         from zero_sum_eval.core.registry import LM_REGISTRY, DATASET_REGISTRY, METRIC_REGISTRY, OPTIMIZER_REGISTRY
 
@@ -54,7 +55,7 @@ class Player(ABC):
                 self.actions.append(action)
         
         self.action_names: List[str] = [action if isinstance(action, str) else action.name for action in self.actions]
-        self.action_fn_dict = self.init_actions()
+        self.action_fn_dict = self.init_actions(**(action_args if action_args else {}))
 
         # Add backtracking to all modules
         for action in self.action_fn_dict:
@@ -149,7 +150,7 @@ class Player(ABC):
             return Move(value=output, time=time.time() - start_time, trace=None)
 
     @abstractmethod
-    def init_actions(self) -> Dict[str, Callable]:
+    def init_actions(self, **kwargs) -> Dict[str, Callable]:
         """
         Abstract method for getting the action-function dictionary for the Player
         

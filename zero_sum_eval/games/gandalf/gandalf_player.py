@@ -39,27 +39,39 @@ class InfiltratorResponse(dspy.Signature):
     response = dspy.OutputField(desc="response to the last message in the conversation")
 
 class SentinelResponseModule(dspy.Module):
-    def __init__(self):
+    def __init__(self, module):
         super().__init__()
-        self.sentinel_response = dspy.ChainOfThought(SentinelResponse)
+        self.sentinel_response = module(SentinelResponse)
 
     def forward(self, conversation, secret_password):
         return self.sentinel_response(conversation=conversation, secret_password=secret_password)
 
 class InfiltratorGuessModule(dspy.Module):
-    def __init__(self):
+    def __init__(self, module):
         super().__init__()
-        self.infiltrator_response = dspy.ChainOfThought(InfiltratorResponse)
+        self.infiltrator_response = module(InfiltratorResponse)
 
     def forward(self, conversation):
         return self.infiltrator_response(conversation=conversation)
 
 @PLAYER_REGISTRY.register("gandalf", "gandalf_sentinel")
 class SentinelPlayer(Player):
-    def init_actions(self):
-        return {"sentinel": SentinelResponseModule()}
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
+        return {"sentinel": SentinelResponseModule(module=supported_modules[module])}
 
 @PLAYER_REGISTRY.register("gandalf", "gandalf_infiltrator")
 class InfiltratorPlayer(Player):
-    def init_actions(self):
-        return {"infiltrator": InfiltratorGuessModule()}
+    def init_actions(self, module: str = "ChainOfThought"):
+        supported_modules = {
+            "ChainOfThought": dspy.ChainOfThought,
+            "Predict": dspy.Predict,
+        }
+        if module not in supported_modules:
+            raise ValueError(f"Module {module} not supported, supported modules are: {supported_modules.keys()}")
+        return {"infiltrator": InfiltratorGuessModule(module=supported_modules[module])}
