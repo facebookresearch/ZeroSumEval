@@ -1,36 +1,57 @@
 # to run the pool
-# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/mathquiz.yaml --pool --calculate_ratings | tee mathquiz_pool.log
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/mathquiz_reasoning.yaml --pool --calculate_ratings | tee mathquiz_reasoning_pool.log
 config_type: pool
 manager:
-  max_matches: 100
+  max_matches: 1000
   max_rounds_per_match: 100
   max_player_attempts: 5
-  output_dir: rankings-3-9-25_mathquiz
+  output_dir: rankings-3-9-25_mathquiz_reasoning_1000
 game:
   name: mathquiz
   args:
     players:
       teacher:
         args:
-          max_tries: 1
+          max_tries: 5
       student:
         args:
-          max_tries: 1
+          max_tries: 5
 llms:
   - name: deepseek-chat
     model: openrouter/deepseek/deepseek-chat
     args:
       cache: false
 
+  - name: deepseek-r1
+    model: openrouter/deepseek/deepseek-r1
+    args:
+      cache: false
+    action_args:
+      module: Predict
+
   - name: gpt-4o
     model: openrouter/openai/gpt-4o-2024-11-20
     args:
       cache: false
 
+  - name: o3-mini-high
+    model: openrouter/openai/o3-mini-high
+    args:
+      cache: false
+    action_args:
+      module: Predict
+
   - name: claude-3.7-sonnet
     model: openrouter/anthropic/claude-3.7-sonnet
     args:
       cache: false
+
+  - name: claude-3.7-sonnet-thinking
+    model: openrouter/anthropic/claude-3.7-sonnet:thinking
+    args:
+      cache: false
+    action_args:
+      module: Predict
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
@@ -52,8 +73,14 @@ llms:
     args:
       cache: false
 
+  - name: qwq-32b
+    model: openrouter/qwen/qwq-32b
+    args:
+      cache: false
+    action_args:
+      module: Predict
+      
   - name: qwen2.5-32b
     model: openrouter/qwen/qwen2.5-32b-instruct
     args:
       cache: false
-

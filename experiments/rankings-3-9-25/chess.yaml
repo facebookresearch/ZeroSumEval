@@ -19,8 +19,6 @@ llms:
     model: openrouter/deepseek/deepseek-chat
     args:
       cache: false
-    action_args:
-      module: Predict
 
   - name: deepseek-r1
     model: openrouter/deepseek/deepseek-r1
@@ -77,6 +75,8 @@ llms:
     model: openrouter/qwen/qwq-32b
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: qwen2.5-32b
     model: openrouter/qwen/qwen2.5-32b-instruct

@@ -27,6 +27,8 @@ llms:
     model: openrouter/deepseek/deepseek-r1
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: gpt-4o
     model: openrouter/openai/gpt-4o-2024-11-20
@@ -37,6 +39,8 @@ llms:
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: claude-3.7-sonnet
     model: openrouter/anthropic/claude-3.7-sonnet
@@ -47,6 +51,8 @@ llms:
     model: openrouter/anthropic/claude-3.7-sonnet:thinking
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
@@ -72,7 +78,9 @@ llms:
     model: openrouter/qwen/qwq-32b
     args:
       cache: false
-
+    action_args:
+      module: Predict
+      
   - name: qwen2.5-32b
     model: openrouter/qwen/qwen2.5-32b-instruct
     args:

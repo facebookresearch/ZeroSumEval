@@ -19,59 +19,82 @@ llms:
     model: openrouter/deepseek/deepseek-chat
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: deepseek-r1
     model: openrouter/deepseek/deepseek-r1
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: gpt-4o
     model: openrouter/openai/gpt-4o-2024-11-20
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: o3-mini-high
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: claude-3.7-sonnet
     model: openrouter/anthropic/claude-3.7-sonnet
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: claude-3.7-sonnet-thinking
     model: openrouter/anthropic/claude-3.7-sonnet:thinking
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: llama-3.1-405b
     model: openrouter/meta-llama/llama-3.1-405b-instruct
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: llama-3.3-70b
     model: openrouter/meta-llama/llama-3.3-70b-instruct
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: gemini-2.0-flash
     model: openrouter/google/gemini-2.0-flash-001
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: qwq-32b
     model: openrouter/qwen/qwq-32b
     args:
       cache: false
+    action_args:
+      module: Predict
 
   - name: qwen2.5-32b
     model: openrouter/qwen/qwen2.5-32b-instruct
     args:
       cache: false
-
+    action_args:
+      module: Predict
