@@ -14,7 +14,7 @@ authors = [
 ]
 description = "A framework for evaluating LLMs using zero-sum multiplayer simulations"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     # Core dependencies
     "dspy==2.5.41",
