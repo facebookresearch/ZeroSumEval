@@ -15,32 +15,61 @@ from sklearn.linear_model import LogisticRegression
 
 
 def summarize_results(matches_df: pd.DataFrame) -> None:
+    """Prints various summary metrics of the matches with per-model and per-role results."""
 
-    results = defaultdict(lambda: [0, 0, 0])
+    # Initialize summary table
+    if 'tie' in matches_df['winner']:
+        outcomes = ['wins', 'draws', 'loses', 'total']
+    else:
+        outcomes = ['wins', 'loses', 'total']
+
+    roles = list(set(matches_df['role_a']) | set(matches_df['role_b']))
+    models = list(set(matches_df['model_a']) | set(matches_df['model_b']))
+
+    # '~' is used as a special substring for table parsing later
+    columns = sum([[f'{role}~{outcome}' for outcome in outcomes] for role in roles], [])
+
+    results_df = pd.DataFrame(0, index=models, columns=columns)
+
+    # Insert raw values
     for row in matches_df.itertuples():
         if row.winner == 'model_a':
-            results[row.model_a][0] += 1
-            results[row.model_b][2] += 1
+            results_df.loc[row.model_a, f"{row.role_a}~wins"]  += 1
+            results_df.loc[row.model_b, f"{row.role_b}~loses"] += 1
         elif row.winner == 'model_b':
-            results[row.model_a][2] += 1
-            results[row.model_b][0] += 1
+            results_df.loc[row.model_a, f"{row.role_a}~loses"] += 1
+            results_df.loc[row.model_b, f"{row.role_b}~wins"]  += 1
         else:
-            results[row.model_a][2] += 1
-            results[row.model_b][0] += 1
-    strength = lambda res: (res[1][0] - res[1][2]) / len(res[1])
-    for model, result in sorted(results.items(), key=strength, reverse=True):
-        print(f"{model}: {result[0]}W / {result[1]}D / {result[2]}L")
+            results_df.loc[row.model_a, f"{row.role_a}~draws"] += 1
+            results_df.loc[row.model_b, f"{row.role_b}~draws"] += 1
+
+    # Aggregate results
+    for role in roles:
+        role_cols = results_df.filter(like=f'{role}~').columns
+        results_df[f'{role}~total'] = results_df[role_cols].sum(axis=1)
+    for outcome in outcomes:
+        outcome_cols = results_df.filter(like=f'~{outcome}').columns
+        results_df[f'all~{outcome}'] = results_df[outcome_cols].sum(axis=1)
+
+    total_cols = results_df.filter(like=f'all~').columns
+    results_df[f'all~total'] = results_df[total_cols].sum(axis=1)
+
+    return results_df
 
 
-# Function from https://lmsys.org/blog/2023-12-07-leaderboard/
 def compute_mle_elo(
-    df, SCALE=100, BASE=10, INIT_RATING=1000, sample_weight=None
+    df, SCALE=400, BASE=10, INIT_RATING=1000, sample_weight=None
 ):
+    """
+    Computes Bradley-Terry rating score. Heavily inspired by:
+    https://lmsys.org/blog/2023-12-07-leaderboard/
+    """
     
     models = set(df['model_a']) | set(df['model_b'])
     models = list(sorted(models))
 
     ptbl_win = pd.DataFrame(0, index=models, columns=models)
+
     for row in df.itertuples():
         if row.winner == 'model_a':
             ptbl_win.loc[row.model_a, row.model_b] += 2
@@ -85,8 +114,8 @@ def compute_mle_elo(
     return pd.Series(elo_scores, index=models.index).sort_values(ascending=False)
 
 
-# Function from https://lmsys.org/blog/2023-12-07-leaderboard/
 def get_bootstrap_result(battles, func_compute_elo, num_round):
+    """From https://lmsys.org/blog/2023-12-07-leaderboard/"""
     rows = []
     for _ in tqdm(range(num_round), desc="bootstrap"):
         try:
@@ -103,9 +132,6 @@ def get_bootstrap_result(battles, func_compute_elo, num_round):
 
 def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per_player: Optional[float] = None) -> pd.DataFrame:
 
-    model_roles = defaultdict(lambda: defaultdict(int))
-    model_results = defaultdict(lambda: [0]*3)
-
     matches = []
     for match_results_path in glob(f'{logs_path}/**/matches/*/scores.json', recursive=True):
         with open(match_results_path) as f:
@@ -117,7 +143,6 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per
         for model in models:
             if scores[model]['attempts'] >= max_player_attempts or (max_time_per_player is not None and scores[model]['total_time'] >= max_time_per_player):
                 scores[model]['score'] = -math.inf
-            model_roles[model][scores[model]['role']] += 1
             
         def winner(scores: dict, models: List[str]) -> str:
             advantage_a = scores[models[0]]['score'] - scores[models[1]]['score']
@@ -129,26 +154,25 @@ def convert_matches_to_df(logs_path: str, max_player_attempts: int, max_time_per
         
         matches.append([
             models[0],
+            scores[models[0]]['role'],
             models[1],
+            scores[models[1]]['role'],
             winner(scores, models),
         ])
 
-    matches_df = pd.DataFrame(matches, columns=['model_a', 'model_b', 'winner'])
+    columns = ['model_a', 'role_a', 'model_b', 'role_b', 'winner']
+    match_df = pd.DataFrame(matches, columns=columns)
 
-    print('Role Summary:')
-    for model, roles in sorted(model_roles.items()):
-        print(model)
-        print(', '.join(f'{k}: {v}' for k, v in sorted(roles.items())))
-    print('\n')
-
-    print('Result Summary:')
-    summarize_results(matches_df)
-    print('\n')
-
-    return matches_df
+    return match_df
 
 
-def calculate_ratings(logs_path: str, bootstrap_rounds: int, max_time_per_player: Optional[float] = None) -> pd.DataFrame:
+def calculate_ratings(
+    logs_path: str,
+    bootstrap_rounds: int,
+    max_time_per_player: Optional[float] = None,
+    models: Optional[List[str]] = None,
+) -> pd.DataFrame:
+    
 
     with open(os.path.join(logs_path, 'pool_config.yaml')) as f:
         config = yaml.safe_load(f)
@@ -156,16 +180,29 @@ def calculate_ratings(logs_path: str, bootstrap_rounds: int, max_time_per_player
 
     match_df = convert_matches_to_df(logs_path=logs_path, max_player_attempts=max_player_attempts, max_time_per_player=max_time_per_player)
 
+    if models is not None:
+        match_df = match_df[match_df['model_a'].isin(models)]
+        match_df = match_df[match_df['model_b'].isin(models)]
+
+    results_df = summarize_results(match_df)
+
     np.random.seed(1)
     bootstrap_elo_lu = get_bootstrap_result(match_df, compute_mle_elo, bootstrap_rounds)
 
-    bars = pd.DataFrame(dict(
-        lower = bootstrap_elo_lu.quantile(.025),
-        rating = bootstrap_elo_lu.quantile(.5),
-        upper = bootstrap_elo_lu.quantile(.975),
-    )).reset_index(names="model").sort_values("rating", ascending=False).round(decimals=2)
+    ratings_df = pd.DataFrame({
+        'rating~lower': bootstrap_elo_lu.quantile(.025),
+        'rating~predicted': compute_mle_elo(match_df),
+        'rating~upper': bootstrap_elo_lu.quantile(.975),
+    })
+
+    results_df = results_df.join(ratings_df)
+
+    results_df = results_df.sort_values("rating~predicted", ascending=False)
+    results_df = results_df.round(decimals=1)
+
+    results_df.columns = pd.MultiIndex.from_tuples(tuple(col.split('~')) for col in results_df.columns)
     
-    return bars
+    return results_df
 
     
 if __name__ == "__main__":
@@ -175,9 +212,10 @@ if __name__ == "__main__":
     parser.add_argument("--logs-path", "-p", help="Path to the match logs file", required=True)
     parser.add_argument("--bootstrap-rounds", "-b", help="Number of rounds to bootstrap for confidence intervals.", type=int, default=10_000)
     parser.add_argument("--max-time-per-player", "-t", help="Maximum number of player time.", type=float, default=None)
+    parser.add_argument("--models", "-m", help="Filter analysis to matches with only these models. Uses all models by default", type=str, nargs='+', default=None)
     
     args = parser.parse_args()
 
-    ratings = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player)
+    results_df = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player, models=args.models)
     
-    print(ratings)
+    print(results_df)
