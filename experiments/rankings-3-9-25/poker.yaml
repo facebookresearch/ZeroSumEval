@@ -1,9 +1,9 @@
 config_type: pool
 manager:
-  max_matches: 100
+  max_matches: 1000
   max_rounds_per_match: 100
-  max_player_attempts: 3
-  output_dir: rankings-3-9-25_poker
+  max_player_attempts: 5
+  output_dir: rankings-3-9-25_poker_1000
 game:
   name: poker
   args:

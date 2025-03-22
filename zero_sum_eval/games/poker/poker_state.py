@@ -1,5 +1,6 @@
 from collections import Counter
 import random
+import time
 from typing import Dict, List
 from zero_sum_eval.core.game_state import Action, GameState, InvalidMoveError, PlayerDefinition
 from zero_sum_eval.core.registry import GAME_REGISTRY
@@ -35,7 +36,8 @@ class PokerGame(GameState):
     def reset_game(self):
         """Reset the hand-specific state for a new hand, preserving chip counts."""
         self.deck = list(range(52))
-        random.seed(1)
+        # Use current time to ensure different random values each game
+        random.seed(int(time.time()))
         random.shuffle(self.deck)
         
         self.hole_cards = {
@@ -361,6 +363,10 @@ class PokerGame(GameState):
         display_str += f"Round: {self.current_round}/{self.rounds}\n"
         display_str += f"Stage: {self.stage}\n"
         display_str += f"Community cards: {self._format_cards(self.community_cards)}\n"
+        display_str += f"Hole cards: "
+        for player_key in self.player_keys:
+            display_str += f"({player_key}: {self._format_cards(self.hole_cards[player_key])}) "
+        display_str += "\n"
         display_str += f"Pot: {self.pot}\n"
         display_str += f"Current bet: {self.current_bet}\n"
         for player_key in self.player_keys:
@@ -373,6 +379,8 @@ class PokerGame(GameState):
         """Export the game state."""
         return {
             'stage': self.stage,
+            'hole_cards': self.hole_cards,
+            'community_cards': self.community_cards,
             'pot': self.pot,
             'current_bet': self.current_bet,
             'chips': self.chips,
