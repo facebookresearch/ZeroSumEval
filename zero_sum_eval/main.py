@@ -61,7 +61,7 @@ This script supports three modes of operation:
     # Calculate ELOs arguments
     parser.add_argument("--calculate_ratings", action="store_true", help="Calculate ratings for the models.")
     parser.add_argument("--bootstrap_rounds", type=int, default=100, help="Number of bootstrap rounds to calculate ELOs.")
-
+    parser.add_argument("--role-weights", "-r", help="Weight for each role in format 'role=weight'. Uses equal weights by default", type=str, nargs='+', default=None)
     # TODO: Add Player arguments. It only works with the default players for now.
     return parser
 
@@ -166,11 +166,15 @@ def cli_run():
     # Determine if we are running any games
     is_running_games = args.pool or args.game
 
+    if args.role_weights is not None:
+        args.role_weights = {role: float(weight) for role, weight in (arg.split('=') for arg in args.role_weights)}
+
     # If we are not running any games and calculate_elos is True, we need to only calculate ELOs without running any games from the output directory
     if not is_running_games and args.calculate_ratings and args.output_dir:
         ratings = calculate_ratings(
             logs_path=args.output_dir,
             bootstrap_rounds=args.bootstrap_rounds,
+            role_weights=args.role_weights
         )
         print(ratings)
         return

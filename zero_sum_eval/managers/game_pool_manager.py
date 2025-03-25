@@ -88,6 +88,9 @@ class GamePoolManager:
                 if model_names in self.match_freq:
                     self.match_freq[model_names] += 1
                     self.prev_matches_played += 1
+        self.logger.info(f"Match frequency:")
+        for matchup, freq in self.match_freq.items():
+            self.logger.info(f"{matchup[0]} vs {matchup[1]}: {freq}")
 
     def _get_player_configs(self):
         player_definitions = GAME_REGISTRY[self.game.lower()].player_definitions()

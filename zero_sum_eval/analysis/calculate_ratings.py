@@ -4,8 +4,7 @@ import yaml
 import os
 import argparse
 from glob import glob
-from typing import List, Optional
-from collections import defaultdict
+from typing import List, Optional, Dict
 
 import numpy as np
 import pandas as pd
@@ -55,7 +54,7 @@ def summarize_results(matches_df: pd.DataFrame) -> None:
 
 
 def compute_mle_elo(
-    df, SCALE=400, BASE=10, INIT_RATING=1000, sample_weight=None
+    df, SCALE=400, BASE=10, INIT_RATING=1000, role_weights=None
 ):
     """
     Computes Bradley-Terry rating score. Heavily inspired by:
@@ -69,12 +68,12 @@ def compute_mle_elo(
 
     for row in df.itertuples():
         if row.winner == 'model_a':
-            ptbl_win.loc[row.model_a, row.model_b] += 2
+            ptbl_win.loc[row.model_a, row.model_b] += 1 * role_weights[row.role_a]
         elif row.winner == 'model_b':
-            ptbl_win.loc[row.model_b, row.model_a] += 2
+            ptbl_win.loc[row.model_b, row.model_a] += 1 * role_weights[row.role_b]
         else:
-            ptbl_win.loc[row.model_a, row.model_b] += 1
-            ptbl_win.loc[row.model_b, row.model_a] += 1
+            ptbl_win.loc[row.model_a, row.model_b] += 0.5
+            ptbl_win.loc[row.model_b, row.model_a] += 0.5
 
     models = pd.Series(np.arange(len(ptbl_win.index)), index=ptbl_win.index)
 
@@ -111,12 +110,12 @@ def compute_mle_elo(
     return pd.Series(elo_scores, index=models.index).sort_values(ascending=False)
 
 
-def get_bootstrap_result(battles, func_compute_elo, num_round):
+def get_bootstrap_result(battles, func_compute_elo, num_round, role_weights=None):
     """From https://lmsys.org/blog/2023-12-07-leaderboard/"""
     rows = []
     for _ in tqdm(range(num_round), desc="bootstrap"):
         try:
-            rows.append(func_compute_elo(battles.sample(frac=1.0, replace=True)))
+            rows.append(func_compute_elo(battles.sample(frac=1.0, replace=True), role_weights=role_weights))
         except KeyError:
             pass
     
@@ -168,6 +167,7 @@ def calculate_ratings(
     bootstrap_rounds: int,
     max_time_per_player: Optional[float] = None,
     models: Optional[List[str]] = None,
+    role_weights: Optional[Dict[str, float]] = None,
 ) -> pd.DataFrame:
     
 
@@ -180,15 +180,23 @@ def calculate_ratings(
     if models is not None:
         match_df = match_df[match_df['model_a'].isin(models)]
         match_df = match_df[match_df['model_b'].isin(models)]
+    roles = set(match_df['role_a']) | set(match_df['role_b'])
+    
+    if role_weights is None:
+        role_weights = {role: 1.0 for role in roles}
+    else:
+        for role in roles:
+            if role not in role_weights:
+                role_weights[role] = 1.0
 
     results_df = summarize_results(match_df)
 
     np.random.seed(1)
-    bootstrap_elo_lu = get_bootstrap_result(match_df, compute_mle_elo, bootstrap_rounds)
+    bootstrap_elo_lu = get_bootstrap_result(match_df, compute_mle_elo, bootstrap_rounds, role_weights)
 
     ratings_df = pd.DataFrame({
         'rating~lower': bootstrap_elo_lu.quantile(.025),
-        'rating~predicted': compute_mle_elo(match_df),
+        'rating~predicted': compute_mle_elo(match_df, role_weights=role_weights),
         'rating~upper': bootstrap_elo_lu.quantile(.975),
     })
 
@@ -210,9 +218,12 @@ if __name__ == "__main__":
     parser.add_argument("--bootstrap-rounds", "-b", help="Number of rounds to bootstrap for confidence intervals.", type=int, default=10_000)
     parser.add_argument("--max-time-per-player", "-t", help="Maximum number of player time.", type=float, default=None)
     parser.add_argument("--models", "-m", help="Filter analysis to matches with only these models. Uses all models by default", type=str, nargs='+', default=None)
-    
+    parser.add_argument("--role-weights", "-r", help="Weight for each role in format 'role=weight'. Uses equal weights by default", type=str, nargs='+', default=None)
     args = parser.parse_args()
 
-    results_df = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player, models=args.models)
+    if args.role_weights is not None:
+        args.role_weights = {role: float(weight) for role, weight in (arg.split('=') for arg in args.role_weights)}
+
+    results_df = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player, models=args.models, role_weights=args.role_weights)
     
     print(results_df)

@@ -1,11 +1,11 @@
 # to run the pool
-# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/mathquiz_reasoning.yaml --pool --calculate_ratings | tee mathquiz_reasoning_pool.log
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/mathquiz.yaml --pool --calculate_ratings
 config_type: pool
 manager:
-  max_matches: 1000
+  max_matches: 1050
   max_rounds_per_match: 100
   max_player_attempts: 5
-  output_dir: rankings-3-9-25_mathquiz_reasoning_1000
+  output_dir: rankings-3-9-25_mathquiz_final_500
 game:
   name: mathquiz
   args:
