@@ -68,8 +68,10 @@ class PyJailGame(GameState):
                 self.pyjail_code = code
 
         elif action.name in "SolvePyJail":
-            output = self._execute_pyjail(pyjail_code=self.pyjail_code, user_input=code)
-
+            try:
+                output = self._execute_pyjail(pyjail_code=self.pyjail_code, user_input=code)
+            except Exception as e:
+                output = f"Raised exception: {e}"
             if self.flag in output:
                 if self.defender_solution is None:
                     self.defender_solution = code

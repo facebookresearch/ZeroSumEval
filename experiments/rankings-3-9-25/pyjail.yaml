@@ -1,13 +1,15 @@
 config_type: pool
 manager:
-  max_matches: 100
-  max_rounds_per_match: 100
-  max_player_attempts: 3
-  output_dir: rankings-3-9-25_pyjail
+  max_matches: 200
+  max_rounds_per_match: 1000
+  max_player_attempts: 5
+  max_concurrent_matches: 5
+  output_dir: rankings-3-9-25_pyjail-new
 game:
   name: pyjail
   args:
-    # ask_permission: False
+    max_attacks: 5
+    ask_permission: false
     players:
       defender:
         name: pyjail_player
@@ -22,23 +24,30 @@ llms:
     model: openrouter/deepseek/deepseek-chat
     args:
       cache: false
+      max_tokens: 4000
+      
 
-  - name: deepseek-r1
-    model: openrouter/deepseek/deepseek-r1
-    args:
-      cache: false
-    action_args:
-      module: Predict
+  # - name: deepseek-r1
+  #   model: openrouter/deepseek/deepseek-r1
+  #   args:
+  #     cache: false
+  #     max_tokens: 4000
+  #   action_args:
+  #     module: Predict
+      
 
   - name: gpt-4o
     model: openrouter/openai/gpt-4o-2024-11-20
     args:
-      cache: false
+      cache: false 
+      max_tokens: 4000
+      
 
   - name: o3-mini-high
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
@@ -51,6 +60,7 @@ llms:
     model: openrouter/anthropic/claude-3.7-sonnet:thinking
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
@@ -58,30 +68,40 @@ llms:
     model: openrouter/meta-llama/llama-3.1-70b-instruct
     args:
       cache: false
+      max_tokens: 4000
 
   - name: llama-3.1-405b
     model: openrouter/meta-llama/llama-3.1-405b-instruct
     args:
       cache: false
+      max_tokens: 4000
+      
 
   - name: llama-3.3-70b
     model: openrouter/meta-llama/llama-3.3-70b-instruct
     args:
       cache: false
+      max_tokens: 4000
+      
 
   - name: gemini-2.0-flash
     model: openrouter/google/gemini-2.0-flash-001
+    max_tokens: 4000
     args:
       cache: false
+      
 
   - name: qwq-32b
     model: openrouter/qwen/qwq-32b
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
+      
       
   - name: qwen2.5-32b
     model: openrouter/qwen/qwen2.5-32b-instruct
     args:
       cache: false
+      max_tokens: 4000
