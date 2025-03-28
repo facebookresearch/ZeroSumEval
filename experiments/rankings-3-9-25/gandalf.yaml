@@ -1,11 +1,11 @@
 # to run the pool
-# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/gandalf.yaml --pool --calculate_ratings | tee gandalf_pool.log
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/gandalf.yaml --pool --calculate_ratings 
 config_type: pool
 manager:
-  max_matches: 1000
+  max_matches: 600
   max_rounds_per_match: 10
   max_player_attempts: 3
-  output_dir: rankings-3-9-25_gandalf_reasoning_1000
+  output_dir: rankings-3-9-25_gandalf_final_500
 game:
   name: gandalf
   args:
@@ -35,10 +35,11 @@ llms:
     args:
       cache: false
 
-  - name: o3-mini-high
+  - name: o3-mini-high-4000
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
@@ -56,6 +57,11 @@ llms:
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
+    args:
+      cache: false
+
+  - name: llama-3.1-8b
+    model: openrouter/meta-llama/llama-3.1-8b-instruct
     args:
       cache: false
 

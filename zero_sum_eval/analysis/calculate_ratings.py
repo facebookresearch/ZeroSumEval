@@ -54,7 +54,7 @@ def summarize_results(matches_df: pd.DataFrame) -> None:
 
 
 def compute_mle_elo(
-    df, SCALE=400, BASE=10, INIT_RATING=1000, role_weights=None
+    df, SCALE=100, BASE=10, INIT_RATING=1000, role_weights=None
 ):
     """
     Computes Bradley-Terry rating score. Heavily inspired by:
@@ -68,12 +68,12 @@ def compute_mle_elo(
 
     for row in df.itertuples():
         if row.winner == 'model_a':
-            ptbl_win.loc[row.model_a, row.model_b] += 1 * role_weights[row.role_a]
+            ptbl_win.loc[row.model_a, row.model_b] += 2 * role_weights[row.role_a]
         elif row.winner == 'model_b':
-            ptbl_win.loc[row.model_b, row.model_a] += 1 * role_weights[row.role_b]
+            ptbl_win.loc[row.model_b, row.model_a] += 2 * role_weights[row.role_b]
         else:
-            ptbl_win.loc[row.model_a, row.model_b] += 0.5
-            ptbl_win.loc[row.model_b, row.model_a] += 0.5
+            ptbl_win.loc[row.model_a, row.model_b] += 1
+            ptbl_win.loc[row.model_b, row.model_a] += 1
 
     models = pd.Series(np.arange(len(ptbl_win.index)), index=ptbl_win.index)
 
@@ -207,6 +207,8 @@ def calculate_ratings(
 
     results_df.columns = pd.MultiIndex.from_tuples(tuple(col.split('~')) for col in results_df.columns)
     
+    results_df.to_json(os.path.join(logs_path, 'ratings.json'), orient='records')
+
     return results_df
 
     
@@ -225,5 +227,5 @@ if __name__ == "__main__":
         args.role_weights = {role: float(weight) for role, weight in (arg.split('=') for arg in args.role_weights)}
 
     results_df = calculate_ratings(logs_path=args.logs_path, bootstrap_rounds=args.bootstrap_rounds, max_time_per_player=args.max_time_per_player, models=args.models, role_weights=args.role_weights)
-    
+
     print(results_df)

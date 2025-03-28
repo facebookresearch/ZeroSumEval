@@ -43,6 +43,7 @@ ENV/
 logs/
 zse_outputs/
 .zse_cache/
+paper/figures/
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 

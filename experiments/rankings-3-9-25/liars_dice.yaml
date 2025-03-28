@@ -1,9 +1,12 @@
+# usage
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/liars_dice.yaml --pool --calculate_ratings
+
 config_type: pool
 manager:
-  max_matches: 100
+  max_matches: 500
   max_rounds_per_match: 100
   max_player_attempts: 3
-  output_dir: rankings-3-9-25_liars_dice
+  output_dir: rankings-3-9-25_liars_dice_reasoning_1000
 game:
   name: liars_dice
   args:
@@ -33,10 +36,11 @@ llms:
     args:
       cache: false
 
-  - name: o3-mini-high
+  - name: o3-mini-high-4000
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
@@ -54,6 +58,11 @@ llms:
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
+    args:
+      cache: false
+
+  - name: llama-3.1-8b
+    model: openrouter/meta-llama/llama-3.1-8b-instruct
     args:
       cache: false
 

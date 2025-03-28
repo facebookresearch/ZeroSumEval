@@ -1,9 +1,12 @@
+# usage
+# zseval -c ~/src/ZeroSumEval/experiments/rankings-3-9-25/poker.yaml --pool --calculate_ratings
+
 config_type: pool
 manager:
-  max_matches: 1000
+  max_matches: 600
   max_rounds_per_match: 100
   max_player_attempts: 5
-  output_dir: rankings-3-9-25_poker_1000
+  output_dir: rankings-3-9-25_poker_final_500
 game:
   name: poker
   args:
@@ -36,10 +39,11 @@ llms:
     args:
       cache: false
 
-  - name: o3-mini-high
+  - name: o3-mini-high-4000
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
@@ -57,6 +61,11 @@ llms:
 
   - name: llama-3.1-70b
     model: openrouter/meta-llama/llama-3.1-70b-instruct
+    args:
+      cache: false
+  
+  - name: llama-3.1-8b
+    model: openrouter/meta-llama/llama-3.1-8b-instruct
     args:
       cache: false
 

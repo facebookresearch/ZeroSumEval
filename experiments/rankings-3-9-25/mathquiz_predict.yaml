@@ -38,10 +38,11 @@ llms:
     action_args:
       module: Predict
 
-  - name: o3-mini-high
+  - name: o3-mini-high-4000
     model: openrouter/openai/o3-mini-high
     args:
       cache: false
+      max_tokens: 4000
     action_args:
       module: Predict
 
