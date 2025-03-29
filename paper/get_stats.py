@@ -159,37 +159,36 @@ filenames = {
     "chess": "rankings-3-9-25_chess",
     "debate": "rankings-3-9-25_debate",
     "gandalf": "rankings-3-9-25_gandalf_final_500",
-    "liars_dice": "rankings-3-9-25_liars_dice",
+    "liars_dice": "rankings-3-9-25_liars_dice_reasoning_1000",
     "mathquiz": "rankings-3-9-25_mathquiz_final_500",
     "poker": "rankings-3-9-25_poker_final_500",
 }
 
-if __name__ == "__main__":
-    results_path = "results"
+def get_all_stats(results_path):
+    all_stats = {}
+    
     for game, filename in filenames.items():
         max_attempts_wl = get_max_attempts_wl(os.path.join(results_path, filename))
-        stats = {model: {**max_attempts_wl[model], **stats[model]} for model in stats}
         if game == "chess":
             stats = get_chess_stats(os.path.join(results_path, filename))
             # add max attempts wins and losses
             stats = {model: {**max_attempts_wl[model], **stats[model]} for model in stats}
-            # TODO: visualization
         elif game == "mathquiz":
             stats = get_mathquiz_stats(os.path.join(results_path, filename))
             # add max attempts wins and losses
             stats = {model: {**max_attempts_wl[model], **stats[model]} for model in stats}
-            # TODO: visualization
         elif game == "poker":
             stats = get_poker_stats(os.path.join(results_path, filename))
             # add max attempts wins and losses
             stats = {model: {**max_attempts_wl[model], **stats[model]} for model in stats}
-            # TODO: visualization
         elif game == "pyjail":
             # TODO: get pyjail stats
-            pass
+            stats = {}
         else:
             stats = get_role_wins_stats(os.path.join(results_path, filename))
             # add max attempts wins and losses
             stats = {model: {**max_attempts_wl[model], **stats[model]} for model in stats}
-            # TODO: visualization
-        print(stats)
+        
+        all_stats[game] = stats
+    
+    return all_stats

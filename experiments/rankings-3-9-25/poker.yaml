@@ -39,7 +39,7 @@ llms:
     args:
       cache: false
 
-  - name: o3-mini-high-4000
+  - name: o3-mini-high
     model: openrouter/openai/o3-mini-high
     args:
       cache: false

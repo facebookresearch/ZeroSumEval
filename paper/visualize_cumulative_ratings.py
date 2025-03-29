@@ -2,142 +2,24 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-from PIL import Image
+from matplotlib.offsetbox import AnnotationBbox
 from zero_sum_eval.analysis.calculate_ratings import calculate_ratings
-
+from utils import ROOT_DIR, ALL_DIRS, ROLE_WEIGHTS, CUSTOM_COLORS, GAME_COLOR_MAPPING, LOGO_MAPPING, get_logo
 # Set the style to a more modern look
 plt.style.use('seaborn-v0_8-whitegrid')
-
-# Custom color palette - using different shades of blue
-CUSTOM_COLORS = [
-    (14/255, 140/255, 247/255),   # Bright blue
-    (41/255, 44/255, 147/255),    # Deep blue
-    (0/255, 84/255, 159/255),     # Navy blue
-    (86/255, 180/255, 233/255),   # Sky blue
-    (120/255, 180/255, 210/255),  # Darker light blue for mathquiz
-    (0/255, 119/255, 182/255),    # Medium blue
-    (65/255, 105/255, 225/255)    # Royal blue
-]
-
-# Create a mapping between games and their colors for consistency
-GAME_COLOR_MAPPING = {
-    "chess": CUSTOM_COLORS[0],
-    "debate": CUSTOM_COLORS[1],
-    "gandalf": CUSTOM_COLORS[2],
-    "liars_dice": CUSTOM_COLORS[3],
-    "mathquiz": CUSTOM_COLORS[4],
-    "poker": CUSTOM_COLORS[5],
-    "pyjail": CUSTOM_COLORS[6]
-}
 
 # Font settings for a more professional look
 plt.rcParams.update({
     'font.family': 'sans-serif',
     'font.sans-serif': ['Arial', 'DejaVu Sans', 'Liberation Sans', 'Bitstream Vera Sans', 'sans-serif'],
-    'axes.labelsize': 14,
-    'axes.titlesize': 16,
-    'xtick.labelsize': 12,
-    'ytick.labelsize': 12,
-    'legend.fontsize': 12,
-    'legend.title_fontsize': 14
+    'axes.labelsize': 16,  # Increased from 14
+    'axes.titlesize': 18,  # Increased from 16
+    'xtick.labelsize': 14,  # Increased from 12
+    'ytick.labelsize': 14,  # Increased from 12
+    'legend.fontsize': 14,  # Increased from 12
+    'legend.title_fontsize': 16,  # Increased from 14
+    'font.weight': 'bold'  # Make all text bold by default
 })
-
-# Function to load and resize logo
-def get_logo(logo_path, size=0.15):
-    try:
-        # Use PIL directly to load the image
-        pil_img = Image.open(logo_path)
-        
-        # Convert to RGBA if needed
-        if pil_img.mode != 'RGBA':
-            pil_img = pil_img.convert('RGBA')
-        
-        # Resize all logos to a standard size (e.g., 100x100 pixels)
-        target_size = (100, 100)
-        
-        # Calculate aspect ratio
-        aspect = pil_img.width / pil_img.height
-        
-        # Resize maintaining aspect ratio
-        if aspect > 1:  # Width > Height
-            new_width = target_size[0]
-            new_height = int(new_width / aspect)
-        else:  # Height >= Width
-            new_height = target_size[1]
-            new_width = int(new_height * aspect)
-        
-        # Create a new transparent image with the target size
-        new_img = Image.new('RGBA', target_size, (0, 0, 0, 0))
-        
-        # Resize the original image
-        resized_img = pil_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-        
-        # Calculate position to paste (center)
-        paste_x = (target_size[0] - new_width) // 2
-        paste_y = (target_size[1] - new_height) // 2
-        
-        # Paste the resized image onto the transparent canvas
-        new_img.paste(resized_img, (paste_x, paste_y), resized_img if resized_img.mode == 'RGBA' else None)
-        
-        # Convert to numpy array for matplotlib
-        img_array = np.array(new_img)
-        
-        # Create an OffsetImage with the standardized image
-        return OffsetImage(img_array, zoom=size)
-    except Exception as e:
-        print(f"Error loading logo {logo_path}: {e}")
-        return None
-
-# Map model names to their logo files
-LOGO_DIR = "paper/logos"
-LOGO_MAPPING = {
-    "gpt-4o": os.path.join(LOGO_DIR, "openai.png"),
-    "claude-3.7-sonnet": os.path.join(LOGO_DIR, "claude.png"),
-    "claude-3.7-sonnet-thinking": os.path.join(LOGO_DIR, "claude.png"),
-    "gemini-2.0-flash": os.path.join(LOGO_DIR, "gemini.png"),
-    "llama-3.3-70b": os.path.join(LOGO_DIR, "llama.png"),
-    "llama-3.1-405b": os.path.join(LOGO_DIR, "llama.png"),
-    "llama-3.1-70b": os.path.join(LOGO_DIR, "llama.png"),
-    "deepseek-chat": os.path.join(LOGO_DIR, "deepseek.png"),
-    "deepseek-r1": os.path.join(LOGO_DIR, "deepseek.png"),
-    "qwen2.5-32b": os.path.join(LOGO_DIR, "qwen2.png"),
-    "qwq-32b": os.path.join(LOGO_DIR, "qwen2.png"),
-    "o3-mini-high": os.path.join(LOGO_DIR, "openai.png")
-}
-
-ROOT_DIR = "/Users/haidark/Library/CloudStorage/GoogleDrive-haidark@gmail.com/My Drive/Zero Sum Eval/rankings-3-9-25/"
-ALL_DIRS = {
-    "chess": "rankings-3-9-25_chess",
-    "debate": "rankings-3-9-25_debate",
-    "gandalf": "rankings-3-9-25_gandalf_final_500",
-    "liars_dice": "rankings-3-9-25_liars_dice_reasoning_1000",
-    "mathquiz": "rankings-3-9-25_mathquiz_final_500",
-    "poker": "rankings-3-9-25_poker_final_500",
-    "pyjail": None  # "rankings-3-9-25_pyjail"
-}
-
-ROLE_WEIGHTS = {
-    "chess": {
-        "white": 1.0,
-        "black": 2.0
-    },
-    "debate": None,
-    "gandalf": {
-        "sentinel": 1.0,
-        "infiltrator": 2.0
-    },
-    "liars_dice": None,
-    "mathquiz": {
-        "student": 1.0,
-        "teacher": 2.0
-    },
-    "poker": None,
-    "pyjail": {
-        "defender": 2.0,    
-        "attacker": 1.0
-    }
-}
 
 # Prepare data for a single plot
 all_players = set()
@@ -170,7 +52,7 @@ num_games = len(game_ratings)
 index = np.arange(len(sorted_players))
 
 # Create a figure with a specific aspect ratio
-fig, ax = plt.subplots(figsize=(18, 10), dpi=300)
+fig, ax = plt.subplots(figsize=(16, 9), dpi=300)  # Reduced size for less whitespace
 
 # Set background color
 fig.patch.set_facecolor('white')
@@ -210,9 +92,9 @@ for i, (game, ratings) in enumerate(game_ratings.items()):
         yerr=[lower_bounds, upper_bounds],
         fmt='none',  # No connecting line
         ecolor='black',
-        elinewidth=1.2,
-        capsize=4,
-        capthick=1.5,
+        elinewidth=1.5,  # Increased linewidth
+        capsize=5,  # Increased capsize
+        capthick=1.8,  # Increased thickness
         alpha=0.7,
         zorder=10  # Ensure error bars are drawn on top
     )
@@ -231,7 +113,7 @@ for i, (game, ratings) in enumerate(game_ratings.items()):
                             xytext=(0, 5),  # Position above the rating
                             textcoords='offset points',
                             ha='center', va='bottom',
-                            fontsize=12, fontweight='bold',
+                            fontsize=14, fontweight='bold',  # Increased size
                             color='white')
             
             # Add the rating value for all bars
@@ -240,7 +122,7 @@ for i, (game, ratings) in enumerate(game_ratings.items()):
                         xytext=(0, -10),  # Position below the game name
                         textcoords='offset points',
                         ha='center', va='center',
-                        fontsize=12, fontweight='bold',
+                        fontsize=14, fontweight='bold',  # Increased size
                         color='white')
     
     # Update cumulative values for the next game
@@ -252,13 +134,13 @@ for i, (game, ratings) in enumerate(game_ratings.items()):
 for i, player in enumerate(sorted_players):
     if player in LOGO_MAPPING:
         logo_path = LOGO_MAPPING[player]
-        logo_image = get_logo(logo_path, size=0.5)  # Consistent size for all logos
+        logo_image = get_logo(logo_path, size=0.6)  # Increased size for better visibility
         if logo_image:
             # Position the logo at the top of the bar
             ab = AnnotationBbox(
                 logo_image, 
                 (i, cumulative_ratings[i]), 
-                xybox=(0, 40),  # Offset above the bar
+                xybox=(0, 35),  # Reduced offset above the bar
                 xycoords='data',
                 boxcoords="offset points",
                 frameon=False
@@ -267,23 +149,27 @@ for i, player in enumerate(sorted_players):
     
 
 # Add a horizontal line at y=0
-ax.axhline(y=0, color='#333333', linestyle='-', linewidth=1, alpha=0.3)
+ax.axhline(y=0, color='#333333', linestyle='-', linewidth=1.5, alpha=0.3)  # Increased linewidth
 
 # Customize the grid
 ax.grid(axis='y', linestyle='--', alpha=0.3, color='#333333')
 ax.set_axisbelow(True)  # Put grid behind bars
 
 # Set title and labels with enhanced typography
-ax.set_title('Cumulative Ratings', fontsize=20, fontweight='bold', pad=20)
+# ax.set_title('Cumulative Ratings', fontsize=22, fontweight='bold', pad=15)  # Increased size, reduced padding
 # ax.set_xlabel('Model', fontsize=16, labelpad=15)
-ax.set_ylabel('Rating', fontsize=16, labelpad=15)
+ax.set_ylabel('Rating', fontsize=18, fontweight='bold', labelpad=10)  # Increased size, reduced padding
 
 # Format x-axis labels
-plt.xticks(index, [p.replace('-', '\n') for p in sorted_players], rotation=0, ha='center', fontsize=12)
+plt.xticks(index, [p.replace('-', '\n') for p in sorted_players], rotation=0, ha='center', fontsize=14, fontweight='bold')  # Increased size and made bold
 
 # Format y-axis with fewer ticks
-ax.yaxis.set_major_locator(MaxNLocator(nbins=10))
-plt.yticks(fontsize=12)
+ax.yaxis.set_major_locator(MaxNLocator(nbins=8))  # Reduced number of ticks
+plt.yticks(fontsize=14, fontweight='bold')  # Increased size and made bold
+
+# Increase the y-axis limit by 2% (reduced from 3%)
+y_min, y_max = ax.get_ylim()
+ax.set_ylim(y_min, y_max * 1.02)
 
 # Add a subtle box around the plot
 for spine in ax.spines.values():
@@ -293,8 +179,7 @@ for spine in ax.spines.values():
 
 # Adjust layout
 plt.tight_layout()
-plt.subplots_adjust(bottom=0.2)  # Make room for the legend
+plt.subplots_adjust(bottom=0.15)  # Reduced from 0.2
 
-# Save the figure with high resolution
+# Save the figure with high resolution (PDF only)
 plt.savefig('paper/figures/model_performance_comparison.pdf', dpi=300, bbox_inches='tight')
-plt.savefig('paper/figures/model_performance_comparison.png', dpi=300, bbox_inches='tight')
