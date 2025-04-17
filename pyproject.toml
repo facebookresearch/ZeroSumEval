@@ -54,8 +54,8 @@ dev = [
 zseval = "zero_sum_eval.main:cli_run"
 
 [project.urls]
-"Homepage" = "https://github.com/ZeroSumEval/ZeroSumEval/"
-"Bug Tracker" = "https://github.com/ZeroSumEval/ZeroSumEval/issues"
+"Homepage" = "https://github.com/facebookresearch/ZeroSumEval/"
+"Bug Tracker" = "https://github.com/facebookresearch/ZeroSumEval/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
