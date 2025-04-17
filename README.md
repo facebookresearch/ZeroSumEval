@@ -14,7 +14,7 @@
 ![Version](https://img.shields.io/pypi/v/zero-sum-eval)
 ![Pypi Downloads](https://img.shields.io/pypi/dm/zero_sum_eval)
 [![Discord](https://img.shields.io/discord/1348445678589968466)](https://discord.gg/7Dk6jYyk8H)
-[![Python package](https://github.com/ZeroSumEval/ZeroSumEval/actions/workflows/tests.yml/badge.svg)](https://github.com/haidark/ZeroSumEval/actions/workflows/tests.yml)
+[![Python package](https://github.com/facebookresearch/ZeroSumEval/actions/workflows/tests.yml/badge.svg)](https://github.com/haidark/ZeroSumEval/actions/workflows/tests.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/license/apache-2-0)
 
 </div>
@@ -193,7 +193,7 @@ If you use ZeroSumEval in your work, please cite it as follows:
 
 ## Contributing
 
-Contributions to ZeroSumEval are welcome! Please follow the [contribution guidelines](CONTRIBUTING.md) and open a pull request or issue on the [GitHub repository](https://github.com/ZeroSumEval/ZeroSumEval).
+Contributions to ZeroSumEval are welcome! Please follow the [contribution guidelines](CONTRIBUTING.md) and open a pull request or issue on the [GitHub repository](https://github.com/facebookresearch/ZeroSumEval).
 
 ## License
 
@@ -201,10 +201,10 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 
 ## Star History
 
-<a href="https://www.star-history.com/#ZeroSumEval/ZeroSumEval&Date">
+<a href="https://www.star-history.com/#facebookresearch/ZeroSumEval&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ZeroSumEval/ZeroSumEval&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ZeroSumEval/ZeroSumEval&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ZeroSumEval/ZeroSumEval&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=facebookresearch/ZeroSumEval&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=facebookresearch/ZeroSumEval&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=facebookresearch/ZeroSumEval&type=Date" />
  </picture>
 </a>
