@@ -1,0 +1,154 @@
+logging:
+  output_dir: ../output/results_mix_all_chess
+manager:
+  name: rating_games
+  game_pool_manager_args:
+    max_matches: 100
+  game_manager_args:
+    max_rounds: 200
+    max_player_attempts: 1
+    win_conditions:
+      - Checkmate
+      - Invalid
+    draw_conditions:
+      - Stalemate
+      - Insufficient material
+      - 75-move rule
+      - Fivefold repetition
+game:
+  name: chess
+  players:
+    - name: chess_player
+      args:
+        id: white
+        roles:
+          - name: White
+            metric: chess_move_validation_metric
+            dataset: chess_puzzle_dataset
+            dataset_args:
+              role: White
+              num_examples: 100
+        max_tries: 5
+    - name: chess_player
+      args:
+        id: black
+        roles:
+          - name: Black
+            metric: chess_move_validation_metric
+            dataset: chess_puzzle_dataset
+            dataset_args:
+              role: Black
+              num_examples: 100
+        max_tries: 5
+llms:
+  - name: gpt-4o-optimized-mipro
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: llama3.1-70b-optimized-mipro
+    model: openrouter/meta-llama/Meta-Llama-3.1-70B-Instruct
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: mistral-large-optimized-mipro
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: claude-3-5-sonnet-optimized-mipro
+    model: openrouter/claude-3-5-sonnet-20240620
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+  
+  - name: gpt-4o-optimized-bsfsrs
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: llama3.1-70b-optimized-bsfsrs
+    model: openrouter/meta-llama/Meta-Llama-3.1-70B-Instruct
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: mistral-large-optimized-bsfsrs
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: claude-3-5-sonnet-optimized-bsfsrs
+    model: openrouter/claude-3-5-sonnet-20240620
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2 
+  
+  - name: gpt-4o-optimized-bsfs
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: BootstrapFewshot
+  
+  - name: llama3.1-70b-optimized-bsfs
+    model: openrouter/meta-llama/Meta-Llama-3.1-70B-Instruct
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: mistral-large-optimized-bsfs
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: claude-3-5-sonnet-optimized-bsfs
+    model: openrouter/claude-3-5-sonnet-20240620
+    optimize: true
+    optimizer: BootstrapFewshot       
+
+  - name: gpt-4o-default
+    model: openrouter/openai/chatgpt-4o-latest
+
+  - name: llama3.1-70b-default
+    model: openrouter/meta-llama/Meta-Llama-3.1-70B-Instruct
+
+  - name: mistral-large-default
+    model: openrouter/mistralai/mistral-large-2411
+
+  - name: claude-3-5-sonnet-default
+    model: openrouter/claude-3-5-sonnet-20240620

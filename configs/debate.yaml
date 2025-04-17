@@ -1,0 +1,27 @@
+manager:
+  output_dir: ../output/debate_game
+  max_player_attempts: 3
+  max_rounds: 20
+game:
+  name: debate
+  args:
+    judges:
+      - name: gpt-4o-default
+        model: openrouter/openai/gpt-4o-2024-11-20
+      - name: llama3.1-70b-default
+        model: openrouter/meta-llama/llama-3.1-70b-instruct
+    players:
+      for:
+        name: debate_player
+        args:
+          id: llama3.3 70b for
+          lm:
+            model: openrouter/meta-llama/llama-3.3-70b-instruct
+          max_tries: 5
+      against: 
+        name: debate_player
+        args:
+          id: llama3.1 70b against
+          lm:
+            model: openrouter/meta-llama/llama-3.1-70b-instruct
+          max_tries: 5

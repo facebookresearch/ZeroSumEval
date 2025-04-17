@@ -1,0 +1,39 @@
+config_type: pool
+manager:
+  max_matches: 100
+  max_rounds_per_match: 100
+  max_player_attempts: 3
+  output_dir: pyjail_llama_pool
+game:
+  name: pyjail
+  args:
+    # ask_permission: False
+    players:
+      defender:
+        name: pyjail_player
+        args:
+          max_tries: 5
+      attacker:
+        name: pyjail_player
+        args:
+          max_tries: 5
+llms:
+  - name: llama-3.1-405b
+    model: openrouter/meta-llama/llama-3.1-405b-instruct
+    args:
+      cache: false
+
+  - name: llama3.3-70b
+    model: openrouter/meta-llama/llama-3.3-70b-instruct
+    args:
+      cache: false
+
+  - name: llama3.1-8b
+    model: openrouter/meta-llama/llama-3.1-8b-instruct
+    args:
+      cache: false
+
+  - name: llama3.2-1b
+    model: openrouter/meta-llama/llama-3.2-1b-instruct
+    args:
+      cache: false

@@ -1,0 +1,34 @@
+manager:
+  output_dir: ../output/chess_game
+  max_player_attempts: 5
+  max_rounds: 200
+game:
+  name: chess
+  args:
+    players:
+      white:
+        class: chess_player
+        args:
+          id: llama3.1 70b white
+          actions:
+            - name: MakeMove
+              optimize: true
+              metric: chess_move_validation_metric
+              dataset: chess_dataset
+              dataset_args:
+                filename: ./data/chess/stockfish_examples.jsonl
+                player_key: white
+                num_examples: 10
+          lm:
+            model: openrouter/meta-llama/llama-3.3-70b-instruct
+          optimizer: BootstrapFewshot
+          optimizer_args:
+            max_bootstrapped_demos: 1
+          max_tries: 5
+      black:
+        class: chess_player
+        args:
+          id: llama3.3 70b black
+          lm:
+            model: openrouter/meta-llama/llama-3.3-70b-instruct
+          max_tries: 5

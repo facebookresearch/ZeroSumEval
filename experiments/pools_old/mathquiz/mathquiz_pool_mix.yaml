@@ -1,0 +1,163 @@
+logging:
+  output_dir: outputs_mathquiz/default_pool
+manager:
+  name: rating_games
+  game_pool_manager_args:
+    max_matches: 100
+  game_manager_args:
+    max_player_attempts: 5
+    max_rounds: 100
+    win_conditions:
+      - StudentCorrect
+    draw_conditions:
+game:
+  name: mathquiz
+  players:
+    - name: mathquiz_teacher
+      args:
+        id: teacher
+        roles: 
+          - name: TeacherGenerateQuestion
+            optimize: false
+            metric: math_question_validation_metric
+            dataset: mathquiz_dataset
+            dataset_args:
+              filename: data/mathquiz/mathquiz_hendrycks-math_examples.jsonl
+              # filename: data/mathquiz/mathquiz_gsm8k_examples.jsonl
+              role: TeacherGenerateQuestion
+              num_examples: 10
+          - name: TeacherAnswerQuestion
+            metric: math_answer_validation_metric
+            dataset: mathquiz_dataset
+            dataset_args:
+              filename: data/mathquiz/mathquiz_hendrycks-math_examples.jsonl
+              # filename: data/mathquiz/mathquiz_gsm8k_examples.jsonl
+              role: TeacherAnswerQuestion
+
+        max_tries: 5
+    - name: mathquiz_student
+      args:
+        id: student
+        roles: 
+          - name: StudentAnswerQuestion
+            optimize: false
+            metric: math_answer_validation_metric
+            dataset: mathquiz_dataset
+            dataset_args:
+              filename: data/mathquiz/mathquiz_hendrycks-math_examples.jsonl
+              # filename: data/mathquiz/mathquiz_gsm8k_examples.jsonl
+              role: StudentAnswerQuestion
+              num_examples: 10
+        max_tries: 5
+llms:
+  - name: gpt-4o-optimized-mipro
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: llama3.1-70b-optimized-mipro
+    model: openrouter/meta-llama/llama-3.1-70b-instruct
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: mistral-large-optimized-mipro
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: claude-3-5-sonnet-optimized-mipro
+    model: openrouter/anthropic/claude-3.5-sonnet-20240620
+    optimize: true
+    optimizer: MIPROv2
+    compilation_args:
+      requires_permission_to_run: false
+      num_trials: 10
+      minibatch_size: 10
+      max_bootstrapped_demos: 3
+      max_labeled_demos: 3
+
+  - name: gpt-4o-optimized-bsfsrs
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: llama3.1-70b-optimized-bsfsrs
+    model: openrouter/meta-llama/llama-3.1-70b-instruct
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: mistral-large-optimized-bsfsrs
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: claude-3-5-sonnet-optimized-bsfsrs
+    model: openrouter/anthropic/claude-3.5-sonnet-20240620
+    optimize: true
+    optimizer: BootstrapFewshotWithRandomSearch
+    optimizer_args:
+      max_bootstrapped_demos: 1
+      max_labeled_demos: 1
+      num_candidate_programs: 2
+
+  - name: gpt-4o-optimized-bsfs
+    model: openrouter/openai/chatgpt-4o-latest
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: llama3.1-70b-optimized-bsfs
+    model: openrouter/meta-llama/llama-3.1-70b-instruct
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: mistral-large-optimized-bsfs
+    model: openrouter/mistralai/mistral-large-2411
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: claude-3-5-sonnet-optimized-bsfs
+    model: openrouter/anthropic/claude-3.5-sonnet-20240620
+    optimize: true
+    optimizer: BootstrapFewshot
+
+  - name: gpt-4o-default
+    model: openrouter/openai/chatgpt-4o-latest
+
+  - name: llama3.1-70b-default
+    model: openrouter/meta-llama/llama-3.1-70b-instruct
+
+  - name: mistral-large-default
+    model: openrouter/mistralai/mistral-large-2411
+
+  - name: claude-3-5-sonnet-default
+    model: openrouter/anthropic/claude-3.5-sonnet-20240620
