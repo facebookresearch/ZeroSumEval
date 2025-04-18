@@ -41,15 +41,18 @@ The framework tests various model capabilities, including knowledge, reasoning, 
 
 The eval suite consists of a growing number of simulations, including text-based challenges, board games, and Capture The Flag (CTF) competitions.
 
+<p align="center">
+  <img align="center" src="assets/bar.png" width="800px" />
+  <br>
+  <em>Performance comparison of different LLMs across various games in ZeroSumEval as of March 9, 2025</em>
+</p>
+
 Key features:
 - One-click evals on the existing suite of games
 - Easily extendable abstractions for new game implementations
 - Integration with DSPy for automated prompt optimization
 - Comprehensive logging and analysis tools
 
-<p align="center">
-  <img align="center" src="assets/bar.png" width="800px" />
-</p>
 
 ## Project Structure
 
