@@ -28,6 +28,7 @@
 - [Usage](#usage)
 - [Games](#games)
 - [Configuration](#configuration)
+- [Acknowledgments](#acknowledgements)
 - [Citation](#citation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -182,14 +183,37 @@ game:
 ```
 </details>
 
+## Acknowledgements
+
+Many thanks to Hisham Alyahya, Yazeed Alnumay, Colton Ritchie, and M Saiful Bari for their active contributions to the project. Because the project moved repositories, we were unable to preserve the commit history of the original repository.
+
 ## Citation
 
-If you use ZeroSumEval in your work, please cite it as follows:
+If you use ZeroSumEval in your work, please cite the following papers:
 
+### Paper:
 ```bibtex
-@article{khanzerosumeval,
-  title={ZeroSumEval: Scaling LLM Evaluation with Inter-Model Competition},
-  author={Khan, Haidar and Alyahya, Hisham Abdullah and Ritchie, Colton and Alnumay, Yazeed and Bari, M Saiful and Yener, Bulent}
+@misc{khan2025zerosumevalscalingllmevaluation,
+      title={ZeroSumEval: Scaling LLM Evaluation with Inter-Model Competition},
+      author={Haidar Khan and Hisham A. Alyahya and Yazeed Alnumay and M Saiful Bari and Bülent Yener},
+      year={2025},
+      eprint={2504.12562},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2504.12562},
+}
+```
+
+### Demo Paper:
+```bibtex
+@misc{alyahya2025zerosumevalextensibleframeworkscaling,
+      title={ZeroSumEval: An Extensible Framework For Scaling LLM Evaluation with Inter-Model Competition},
+      author={Hisham A. Alyahya and Haidar Khan and Yazeed Alnumay and M Saiful Bari and Bülent Yener},
+      year={2025},
+      eprint={2503.10673},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2503.10673},
 }
 ```
 
@@ -200,6 +224,8 @@ Contributions to ZeroSumEval are welcome! Please follow the [contribution guidel
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+
+ZeroSumEval collects model outputs in its logs for analysis and evaluation purposes. Each model's outputs are subject to the terms and conditions of the model's license and should be used in accordance with those terms.
 
 ## Star History
 
