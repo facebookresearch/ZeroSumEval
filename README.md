@@ -1,5 +1,5 @@
 <p align="center">
-  <img align="center" src="assests/logo.png" width="380px" />
+  <img align="center" src="assets/logo.png" width="380px" />
 </p>
 <p align="left">
 
@@ -47,7 +47,7 @@ Key features:
 - Comprehensive logging and analysis tools
 
 <p align="center">
-  <img align="center" src="assests/bar.png" width="800px" />
+  <img align="center" src="assets/bar.png" width="800px" />
 </p>
 
 ## Project Structure
