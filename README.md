@@ -44,7 +44,7 @@ The eval suite consists of a growing number of simulations, including text-based
 <p align="center">
   <img align="center" src="assets/bar.png" width="800px" />
   <br>
-  <em>Performance comparison of different LLMs across various games in ZeroSumEval as of March 9, 2025</em>
+  <em>Performance comparison of different LLMs across various games in ZeroSumEval (March 9, 2025)</em>
 </p>
 
 Key features:
