@@ -1,5 +1,5 @@
 <p align="center">
-  <img align="center" src="logo.png" width="380px" />
+  <img align="center" src="assests/logo.png" width="380px" />
 </p>
 <p align="left">
 
@@ -34,7 +34,7 @@
 
 ## Overview
 
-ZeroSumEval is a dynamic evaluation benchmark for LLMs using competitive scenarios that scales with model capabilities (i.e. as models get better, the benchmark gets harder). Instead of fixed evaluation benchmarks or subjective judging criteria, ZeroSumEval uses multi-agent simulations with clear win conditions to pit models against each other. 
+ZeroSumEval is a dynamic evaluation benchmark for LLMs using competitive scenarios that scales with model capabilities (i.e. as models get better, the benchmark gets harder). Instead of fixed evaluation benchmarks or subjective judging criteria, ZeroSumEval uses multi-agent simulations with clear win conditions to pit models against each other.
 
 The framework tests various model capabilities, including knowledge, reasoning, and planning. In addition, ZeroSumEval uses [DSPy](https://github.com/stanfordnlp/dspy) optimization to test the self-improvement capability of models and ensure the competition between models is fair.
 
@@ -46,19 +46,21 @@ Key features:
 - Integration with DSPy for automated prompt optimization
 - Comprehensive logging and analysis tools
 
-TODO: barcharts should go here
+<p align="center">
+  <img align="center" src="assests/bar.png" width="800px" />
+</p>
 
 ## Project Structure
 
 The project is organized as follows:
 
-- `zero_sum_eval/`: Main package containing the core framework  
-  - `analysis/`: Modules for analyzing game performance and calculating ratings  
-  - `core/`: Core game-related components, including player and game state management  
-  - `games/`: Individual game implementations  
-  - `managers/`: Game and match management classes  
-  - `utils/`: Utility functions for logging, configuration, checkpointing, and type definitions  
-  - `main.py`: Entry point for running games and matches  
+- `zero_sum_eval/`: Main package containing the core framework
+  - `analysis/`: Modules for analyzing game performance and calculating ratings
+  - `core/`: Core game-related components, including player and game state management
+  - `games/`: Individual game implementations
+  - `managers/`: Game and match management classes
+  - `utils/`: Utility functions for logging, configuration, checkpointing, and type definitions
+  - `main.py`: Entry point for running games and matches
 - `data/`: Game-specific data and examples
 - `configs/`: Configuration files for different games and scenarios
 
