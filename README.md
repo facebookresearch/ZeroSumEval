@@ -194,7 +194,7 @@ Many thanks to Hisham Alyahya, Yazeed Alnumay, Colton Ritchie, and M Saiful Bari
 
 If you use ZeroSumEval in your work, please cite the following papers:
 
-### Paper:
+### [Paper](https://arxiv.org/abs/2504.12562):
 ```bibtex
 @misc{khan2025zerosumevalscalingllmevaluation,
       title={ZeroSumEval: Scaling LLM Evaluation with Inter-Model Competition},
@@ -207,7 +207,7 @@ If you use ZeroSumEval in your work, please cite the following papers:
 }
 ```
 
-### Demo Paper:
+### [Demo Paper](https://arxiv.org/abs/2503.10673):
 ```bibtex
 @misc{alyahya2025zerosumevalextensibleframeworkscaling,
       title={ZeroSumEval: An Extensible Framework For Scaling LLM Evaluation with Inter-Model Competition},
