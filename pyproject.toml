@@ -4,13 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zero-sum-eval"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
     { name="Haidar Khan", email="haidark@gmail.com" },
     { name="Hisham Alyahya", email="hisham.alyahya@outlook.com" },
     { name="Yazeed Alnumay", email="yalnumay1@gmail.com" },
-    { name="M Saiful Bari", email="sbmaruf@gmail.com" },
-    { name="Bülent Yener", email="byener@gmail.com" }
+    { name="M Saiful Bari", email="sbmaruf@gmail.com" }
 ]
 description = "A framework for evaluating LLMs using zero-sum multiplayer simulations"
 readme = "README.md"
