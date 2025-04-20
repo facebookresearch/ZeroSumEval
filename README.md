@@ -12,12 +12,15 @@
 <div align="center">
 
 ![Version](https://img.shields.io/pypi/v/zero-sum-eval)
+[![arXiv](https://img.shields.io/badge/arXiv-2504.12562-b31b1b)](https://arxiv.org/abs/2504.12562)
+[![Demo arXiv](https://img.shields.io/badge/demo_arXiv-2503.10673-b31b1b)](https://arxiv.org/abs/2503.10673)
 ![Pypi Downloads](https://img.shields.io/pypi/dm/zero_sum_eval)
 [![Discord](https://img.shields.io/discord/1348445678589968466)](https://discord.gg/7Dk6jYyk8H)
 [![Python package](https://github.com/facebookresearch/ZeroSumEval/actions/workflows/tests.yml/badge.svg)](https://github.com/haidark/ZeroSumEval/actions/workflows/tests.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/license/apache-2-0)
 
 </div>
+
 
 <!-- omit in toc -->
 ## Table of Contents
